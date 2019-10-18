@@ -37,6 +37,7 @@ class TextRecorderModule(AbstractConsumingModule):
             self.txt_file = None
 
     def process_iu(self, input_iu):
+        print(input_iu)
         if self.txt_file:
             self.txt_file.write(str(input_iu.grounded_in.creator))
             self.txt_file.write(self.separator)

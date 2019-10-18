@@ -4,7 +4,10 @@ from retico.core import abstract
 from retico.core.text.common import SpeechRecognitionIU
 from retico.core.dialogue.common import DialogueActIU
 
-from rasa_nlu.model import Interpreter
+
+import sys
+sys.path.append("/home/casey/git/rasa_nlu")
+from rasa.nlu.model import IncrementalInterpreter as Interpreter
 
 
 class RasaNLUModule(abstract.AbstractModule):
