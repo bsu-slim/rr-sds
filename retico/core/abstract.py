@@ -257,7 +257,7 @@ class AbstractModule():
                 auxiliary information.
         """
         self._right_buffers = []
-        self.is_running = False
+        self._is_running = False
         self._previous_iu = None
         self._left_buffers = []
         self.mutex = threading.Lock()
@@ -284,7 +284,7 @@ class AbstractModule():
         """
         if not left_buffer or not isinstance(left_buffer, IncrementalQueue):
             return
-        if self.is_running:
+        if self._is_running:
             self.stop()
         self._left_buffers.append(left_buffer)
 
@@ -297,7 +297,7 @@ class AbstractModule():
             left_buffer (IncrementalQueue): The left buffer to remove from the
                 module.
         """
-        if self.is_running:
+        if self._is_running:
             self.stop()
         self._left_buffers.remove(left_buffer)
 
@@ -320,7 +320,7 @@ class AbstractModule():
         """
         if not right_buffer or not isinstance(right_buffer, IncrementalQueue):
             return
-        if self.is_running:
+        if self._is_running:
             self.stop()
         self._right_buffers.append(right_buffer)
 
@@ -333,7 +333,7 @@ class AbstractModule():
             right_buffer (IncrementalQueue): The right buffer to remove from the
                 module.
         """
-        if self.is_running:
+        if self._is_running:
             self.stop()
         self._right_buffers.remove(right_buffer)
 
@@ -397,7 +397,7 @@ class AbstractModule():
         Args:
             module: A module that is subscribed to this module
         """
-        if self.is_running:
+        if self._is_running:
             self.stop()
         # We get a copy of the buffers because we are mutating it
         rbs = self.right_buffers()
@@ -416,7 +416,7 @@ class AbstractModule():
         Args:
             module: A module that this module is subscribed to
         """
-        if self.is_running:
+        if self._is_running:
             self.stop()
         # We get a copy of the buffers because we are mutating it
         lbs = self.left_buffers()
@@ -433,7 +433,7 @@ class AbstractModule():
 
         This method stops the execution of the module.
         """
-        if self.is_running:
+        if self._is_running:
             self.stop()
         lbs = self.left_buffers()
         rbs = self.right_buffers()
@@ -465,8 +465,8 @@ class AbstractModule():
 
     def _run(self):
         self.prepare_run()
-        self.is_running = True
-        while self.is_running:
+        self._is_running = True
+        while self._is_running:
             for buffer in self._left_buffers:
                 with self.mutex:
                     try:
@@ -559,7 +559,7 @@ class AbstractModule():
         """Stops the execution of the processing pipeline of this module at the
         next possible point in time. This may be after the next incoming IU is
         processed."""
-        self.is_running = False
+        self._is_running = False
         if clear_buffer:
             for buffer in self.right_buffers():
                 while not buffer.empty():
@@ -682,8 +682,8 @@ class AbstractProducingModule(AbstractModule):
 
     def _run(self):
         self.prepare_run()
-        self.is_running = True
-        while self.is_running:
+        self._is_running = True
+        while self._is_running:
             with self.mutex:
                 output_iu = self.process_iu(None)
                 if output_iu:
@@ -753,8 +753,8 @@ class AbstractTriggerModule(AbstractProducingModule):
 
     def _run(self):
         self.prepare_run()
-        self.is_running = True
-        while self.is_running:
+        self._is_running = True
+        while self._is_running:
             with self.mutex:
                 time.sleep(0.05)
         self.shutdown()

@@ -3,31 +3,39 @@ from retico.core.debug.console import DebugModule
 from retico.core.audio.io import StreamingSpeakerModule
 from retico.modules.google.asr import GoogleASRModule
 from retico.modules.rasa.nlu import RasaNLUModule
+from retico.modules.opendial.dm import OpenDialModule
 
-# use incremental rasa insead
+# how to restart an utterance?
+# had to change is_running to _is_running because opendial modules have an is_running() method
 
-# run export GOOGLE_APPLICATION_CREDENTIALS=/home/casey/substutute-ca5bdacf1d9a.json
+# run: export GOOGLE_APPLICATION_CREDENTIALS=/home/casey/substutute-ca5bdacf1d9a.json
 
 model_dir = '/home/casey/git/defclar/models/nlu/model_20191018-084937'
+
+domain_dir = '/home/casey/git/PyOpenDial/domains/augi/augi.xml'
 
 mic = MicrophoneModule(5000)
 asr = GoogleASRModule()
 nlu = RasaNLUModule(model_dir=model_dir)
+dm = OpenDialModule(domain_dir=domain_dir)
 debug = DebugModule()
 #m2 = StreamingSpeakerModule(5000)
 
 mic.subscribe(asr)
 asr.subscribe(nlu)
-nlu.subscribe(debug)
+nlu.subscribe(dm)
+dm.subscribe(debug)
 
 mic.run()
 asr.run()
 nlu.run()
+dm.run()
 debug.run()
 
 input()
 
 mic.stop()
 asr.stop()
-nlu.run()   
+nlu.run()  
+dm.run()
 debug.stop()
