@@ -8,7 +8,7 @@ from retico.core.dialogue.common import DialogueActIU
 import sys
 sys.path.append("/home/casey/git/rasa_nlu")
 from rasa.nlu.model import IncrementalInterpreter as Interpreter
-
+#from rasa_nlu.model import Interpreter
 
 class RasaNLUModule(abstract.AbstractModule):
     """A standard rasa NLU module.
@@ -52,12 +52,19 @@ class RasaNLUModule(abstract.AbstractModule):
         if input_iu.get_text() == self.cache:
             return None
         self.cache = input_iu.get_text()
+        print('asr', input_iu.get_text()) # TODO: asr is restart-incremental
+        #text_iu = (input_iu.get_text(), "add") # only handling add for now
+        #result = self.interpreter.parse_incremental(text_iu)
+        #print(result)
+
         result = self.interpreter.parse(input_iu.get_text())
+        print(result)
         concepts = {}
         for entity in result.get("entities"):
             concepts[entity["entity"]] = entity["value"]
         act = result["intent"]["name"]
         confidence = result["intent"]["confidence"]
+        print('nlu', act, concepts, confidence)
         output_iu = self.create_iu(input_iu)
         output_iu.set_act(act, concepts, confidence)
         return output_iu
