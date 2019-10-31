@@ -10,7 +10,9 @@ from retico.modules.opendial.dm import OpenDialModule
 
 # run: export GOOGLE_APPLICATION_CREDENTIALS=/home/casey/substutute-ca5bdacf1d9a.json
 
-model_dir = '/home/casey/git/defclar/models/nlu/model_20191018-084937'
+# model_dir = '/home/casey/git/defclar/models/nlu/model_20191021-103901' # incr rasa
+#model_dir = '/home/casey/git/defclar/models/nlu/model_20191021-180503'
+model_dir = '/home/casey/git/defclar/models/nlu_20191025-102321' # incr pipeline
 
 domain_dir = '/home/casey/git/PyOpenDial/domains/augi/augi.xml'
 
@@ -23,7 +25,7 @@ debug = DebugModule()
 
 mic.subscribe(asr)
 asr.subscribe(nlu)
-nlu.subscribe(dm)
+# nlu.subscribe(dm)
 dm.subscribe(debug)
 
 mic.run()
@@ -36,6 +38,6 @@ input()
 
 mic.stop()
 asr.stop()
-nlu.run()  
-dm.run()
+nlu.stop()  
+dm.stop()
 debug.stop()

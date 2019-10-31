@@ -20,6 +20,7 @@ class DebugModule(abstract.AbstractConsumingModule):
 
     def process_iu(self, input_iu):
         print("Debug:", input_iu)
+        print("  Payload:", input_iu.payload)
         print("  PreviousIU:", input_iu.previous_iu)
         print("  GroundedInIU:", input_iu.grounded_in)
         print("  Age:", input_iu.age())

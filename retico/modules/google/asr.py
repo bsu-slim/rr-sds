@@ -4,6 +4,7 @@ A Module that offers different types of real time speech recognition.
 
 import queue
 import threading
+from retico.core.text import util
 from retico.core import abstract
 from retico.core.text.common import SpeechRecognitionIU
 from retico.core.audio.common import AudioIU
@@ -75,10 +76,14 @@ class GoogleASRModule(abstract.AbstractModule):
                 stability = result.stability
                 text = result.alternatives[0].transcript
                 confidence = result.alternatives[0].confidence
-            predictions.append((result.alternatives[0].transcript,
-                                result.stability,
-                                result.alternatives[0].confidence,
-                                result.is_final))
+            predictions.append(
+                (
+                    result.alternatives[0].transcript,
+                    result.stability,
+                    result.alternatives[0].confidence,
+                    result.is_final,
+                )
+            )
         return predictions, text, stability, confidence, final
 
     def _generator(self):
@@ -101,15 +106,18 @@ class GoogleASRModule(abstract.AbstractModule):
                 except queue.Empty:
                     break
 
-            yield b''.join(data)
+            yield b"".join(data)
 
     def _produce_predictions_loop(self):
         for response in self.responses:
             p, t, s, c, f = self._extract_results(response)
+            util.string_diff_text_iu(self, p, t, s, c, f)
             if p:
                 output_iu = self.create_iu(self.latest_input_iu)
                 self.latest_input_iu = None
                 output_iu.set_asr_results(p, t, s, c, f)
+                if f:
+                    output_iu.committed = True
                 self.append(output_iu)
 
     def setup(self):
@@ -117,16 +125,20 @@ class GoogleASRModule(abstract.AbstractModule):
         config = types.RecognitionConfig(
             encoding=enums.RecognitionConfig.AudioEncoding.LINEAR16,
             sample_rate_hertz=self.rate,
-            language_code=self.language)
+            language_code=self.language,
+        )
         self.streaming_config = types.StreamingRecognitionConfig(
-            config=config,
-            interim_results=True)
+            config=config, interim_results=True
+        )
 
     def prepare_run(self):
-        requests = (types.StreamingRecognizeRequest(audio_content=content)
-                    for content in self._generator())
-        self.responses = self.client.streaming_recognize(self.streaming_config,
-                                                         requests)
+        requests = (
+            types.StreamingRecognizeRequest(audio_content=content)
+            for content in self._generator()
+        )
+        self.responses = self.client.streaming_recognize(
+            self.streaming_config, requests
+        )
         t = threading.Thread(target=self._produce_predictions_loop)
         t.start()
 

@@ -4,7 +4,6 @@ from retico.core import abstract
 from retico.core.text.common import SpeechRecognitionIU
 from retico.core.dialogue.common import DialogueActIU
 
-
 import sys
 sys.path.append("/home/casey/git/rasa_nlu")
 from rasa.nlu.model import IncrementalInterpreter as Interpreter
@@ -36,7 +35,7 @@ class RasaNLUModule(abstract.AbstractModule):
     def output_iu():
         return DialogueActIU
 
-    def __init__(self, model_dir, **kwargs):
+    def __init__(self, model_dir, incremental=False, **kwargs):
         """Initializes the RasaNLUModule.
 
         Args:
@@ -46,27 +45,57 @@ class RasaNLUModule(abstract.AbstractModule):
         super().__init__(**kwargs)
         self.model_dir = model_dir
         self.interpreter = None
+        self.incremental = incremental
+        self.lb_hypotheses = []
         self.cache = None
+        self.started_prediction = False
+
+    def get_current_text(self, input_iu):
+        if not self.incremental:
+            txt = input_iu.get_text()
+            if txt == self.cache:
+                return None
+            self.cache = txt
+            return txt
+        else:
+            self.lb_hypotheses.append(input_iu)
+            self.lb_hypotheses = [iu for iu in self.lb_hypotheses if not iu.revoked]
+            txt = ""
+            for iu in self.lb_hypotheses:
+                txt += iu.get_text()
+            if input_iu.committed:
+                self.lb_hypotheses = []
+            return txt
 
     def process_iu(self, input_iu):
-        if input_iu.get_text() == self.cache:
+        current_text = self.get_current_text(input_iu)
+        if not current_text:
             return None
         self.cache = input_iu.get_text()
-        print('asr', input_iu.get_text()) # TODO: asr is restart-incremental
+        #print('asr', input_iu.get_text()) # TODO: asr is restart-incremental
         #text_iu = (input_iu.get_text(), "add") # only handling add for now
         #result = self.interpreter.parse_incremental(text_iu)
         #print(result)
 
         result = self.interpreter.parse(input_iu.get_text())
-        print(result)
+        #print(result)
         concepts = {}
         for entity in result.get("entities"):
             concepts[entity["entity"]] = entity["value"]
         act = result["intent"]["name"]
         confidence = result["intent"]["confidence"]
-        print('nlu', act, concepts, confidence)
+        #print('nlu', act, concepts, confidence)
         output_iu = self.create_iu(input_iu)
         output_iu.set_act(act, concepts, confidence)
+        piu = output_iu.previous_iu
+        if piu:
+            if piu.act != output_iu.act or piu.concepts != output_iu.concepts:
+                piu.revoked = True
+        if input_iu.committed:
+            output_iu.committed = True
+            self.started_prediction = False
+        else:
+            self.started_prediction = True
         return output_iu
 
     def setup(self):

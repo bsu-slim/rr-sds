@@ -58,6 +58,8 @@ class OpenDialModule(abstract.AbstractModule, Module):
         act, concepts = input_iu.payload
         confidence = input_iu.confidence
 
+        # TODO: incremental
+        # TODO: partially observed
         #cat_table = CategoricalTableBuilder(variable=str('intent'))
         #cat_table.add_row(act, confidence)
         #self.system.add_incremental_content(cat_table.build(), follow_previous=True)
@@ -71,7 +73,7 @@ class OpenDialModule(abstract.AbstractModule, Module):
     def setup(self):
         self._system.change_domain(XMLDomainReader.extract_domain(self.domain_dir))
         self._system.change_settings(self._system.get_settings())
-        self._system.attach_module(self)
+        self._system.attach_module(self) # modules can read the dialogue state
         self._system.start_system()
 
     '''
@@ -88,7 +90,7 @@ class OpenDialModule(abstract.AbstractModule, Module):
     def trigger(self, state, update_vars):
         if 'decision' in update_vars and state.has_chance_node('decision'):
            action = str(state.query_prob('decision').get_best())
-           print('decision', action)
+           #print('decision', action)
 
     @dispatch(bool)
     def pause(self, to_pause):
