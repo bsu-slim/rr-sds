@@ -454,6 +454,18 @@ class AbstractModule:
         for buffer in rbs:
             buffer.remove()
 
+    def revoke(self, revoked_iu):
+        self.process_revoke(revoked_iu)
+        for q in self._right_buffers:
+            if q.consumer.is_valid_input_iu(revoked_iu):
+                q.consumer.revoke(revoked_iu)
+
+    def process_revoke(self, iu_type):
+        """Revokes the most recent IU of specificied iu_type.
+        By default, modules don't need to do anything.
+        """
+        pass
+
     def process_iu(self, input_iu):
         """Processes the information unit given and returns a new IU that can be
         appended tot the output queues.

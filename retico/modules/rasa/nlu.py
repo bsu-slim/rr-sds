@@ -67,24 +67,13 @@ class RasaNLUModule(abstract.AbstractModule):
                 self.lb_hypotheses = []
             return txt
 
-    def process_iu(self, input_iu):
-        current_text = self.get_current_text(input_iu)
-        if not current_text:
-            return None
-        self.cache = input_iu.get_text()
-        #print('asr', input_iu.get_text()) # TODO: asr is restart-incremental
-        #text_iu = (input_iu.get_text(), "add") # only handling add for now
-        #result = self.interpreter.parse_incremental(text_iu)
-        #print(result)
-
-        result = self.interpreter.parse(input_iu.get_text())
-        #print(result)
+    def process_result(self, result, input_iu):
         concepts = {}
         for entity in result.get("entities"):
             concepts[entity["entity"]] = entity["value"]
         act = result["intent"]["name"]
         confidence = result["intent"]["confidence"]
-        #print('nlu', act, concepts, confidence)
+        print('nlu', act, concepts, confidence)
         output_iu = self.create_iu(input_iu)
         output_iu.set_act(act, concepts, confidence)
         piu = output_iu.previous_iu
@@ -97,6 +86,33 @@ class RasaNLUModule(abstract.AbstractModule):
         else:
             self.started_prediction = True
         return output_iu
+
+    def process_iu(self, input_iu):
+        current_text = self.get_current_text(input_iu)
+        if not current_text:
+            return None
+        self.cache = current_text
+        # print('asr', input_iu.get_text()) # TODO: asr is restart-incremental
+        for word in current_text.split():
+            text_iu = (word, "add") # only handling add for now
+            print('add({})'.format(word))
+            result = self.interpreter.parse_incremental(text_iu)
+        #print(result)
+
+        #result = self.interpreter.parse(input_iu.get_text())
+        #print(result)
+        return self.process_result(result, input_iu)
+        
+
+    def process_revoke(self, revoked_iu):
+        
+        
+        for word in reversed(revoked_iu.get_text().split()):
+            text_iu = (word, "revoke") # only handling add for now
+            print('revoke({})'.format(word))
+            result = self.interpreter.parse_incremental(text_iu)
+
+        return self.process_result(result, revoked_iu)
 
     def setup(self):
         self.interpreter = Interpreter.load(self.model_dir)

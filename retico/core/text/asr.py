@@ -71,11 +71,12 @@ class IncrementalizeASRModule(abstract.AbstractModule):
         """Compares the full text given by the asr with the IUs that are already
         produced and returns only the increment from the last update. It revokes all
         previously produced IUs that do not match."""
-        for iu in self.last_ius:
+        for iu in reversed(self.last_ius): # need to work from the most recent IU
             if new_text.startswith(iu.text):
                 new_text = new_text[len(iu.text) :]
             else:
                 iu.revoked = True
+                self.revoke(iu) # signal to later modules to revoke this
         self.last_ius = [iu for iu in self.last_ius if not iu.revoked]
         return new_text
 
@@ -89,7 +90,6 @@ class IncrementalizeASRModule(abstract.AbstractModule):
             return None
 
         output_iu = self.create_iu(input_iu)
-
         # Just copy the input IU
         output_iu.set_asr_results(
             input_iu.predictions,

@@ -111,7 +111,6 @@ class GoogleASRModule(abstract.AbstractModule):
     def _produce_predictions_loop(self):
         for response in self.responses:
             p, t, s, c, f = self._extract_results(response)
-            util.string_diff_text_iu(self, p, t, s, c, f)
             if p:
                 output_iu = self.create_iu(self.latest_input_iu)
                 self.latest_input_iu = None
