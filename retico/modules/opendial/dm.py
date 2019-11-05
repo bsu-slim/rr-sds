@@ -54,7 +54,7 @@ class OpenDialModule(abstract.AbstractModule, Module):
         self._paused = True
 
     def process_iu(self, input_iu):
-        print('input_iu', input_iu.payload)
+        print('dm add({})'.format(input_iu.payload))
         act, concepts = input_iu.payload
         confidence = input_iu.confidence
 
@@ -69,6 +69,10 @@ class OpenDialModule(abstract.AbstractModule, Module):
             self._system.add_content(concept, str(concepts[concept]))
 
         return None # how to get a result from an attached output module?
+
+    def process_revoke(self, revoked_iu):
+        print('dm revoke({})'.format(revoked_iu.payload))
+
 
     def setup(self):
         self._system.change_domain(XMLDomainReader.extract_domain(self.domain_dir))
@@ -90,7 +94,7 @@ class OpenDialModule(abstract.AbstractModule, Module):
     def trigger(self, state, update_vars):
         if 'decision' in update_vars and state.has_chance_node('decision'):
            action = str(state.query_prob('decision').get_best())
-           #print('decision', action)
+           print('decision', action)
 
     @dispatch(bool)
     def pause(self, to_pause):

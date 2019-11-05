@@ -28,7 +28,7 @@ debug = DebugModule()
 mic.subscribe(gasr)
 gasr.subscribe(iasr)
 iasr.subscribe(nlu)
-# nlu.subscribe(debug)
+nlu.subscribe(dm)
 #dm.subscribe(debug)
 
 mic.run()

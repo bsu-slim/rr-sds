@@ -9,8 +9,6 @@ class TextDispatcherModule(abstract.AbstractModule):
     """
     A Moduel that turns SpeechRecognitionIUs or TextIUs into GeneratedTextIUs
     that have the dispatch-flag set.
-
-
     """
 
     @staticmethod

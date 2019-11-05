@@ -273,6 +273,7 @@ class AbstractModule:
         self._is_running = False
         self._previous_iu = None
         self._left_buffers = []
+        self._iu_stack = []
         self.mutex = threading.Lock()
         self.events = {}
 
@@ -455,10 +456,11 @@ class AbstractModule:
             buffer.remove()
 
     def revoke(self, revoked_iu):
-        self.process_revoke(revoked_iu)
+        '''Calls process_revoke on right_buffer modules
+        '''
         for q in self._right_buffers:
             if q.consumer.is_valid_input_iu(revoked_iu):
-                q.consumer.revoke(revoked_iu)
+                q.consumer.process_revoke(revoked_iu)
 
     def process_revoke(self, iu_type):
         """Revokes the most recent IU of specificied iu_type.
@@ -619,6 +621,7 @@ class AbstractModule:
         )
         self.iu_counter += 1
         self._previous_iu = new_iu
+        self._iu_stack.append(new_iu)
         return new_iu
 
     def latest_iu(self):
