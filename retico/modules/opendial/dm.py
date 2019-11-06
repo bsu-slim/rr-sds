@@ -8,7 +8,8 @@ from retico.core.dialogue.common import DialogueDecisionIU
 
 # opendial
 import sys
-sys.path.append("/home/casey/git/PyOpenDial")
+import os
+sys.path.append(os.environ['PYOD'])
 from dialogue_system import DialogueSystem
 from modules.simulation.simulator import Simulator
 from readers.xml_domain_reader import XMLDomainReader
