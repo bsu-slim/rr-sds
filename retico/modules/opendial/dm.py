@@ -109,7 +109,6 @@ class OpenDialModule(abstract.AbstractModule, Module):
                 output_iu.set_act(action, {concept_val._concept:concept_val._value}, concept_val._confidence)
                 self.append(output_iu)
 
-
     @dispatch(bool)
     def pause(self, to_pause):
         """

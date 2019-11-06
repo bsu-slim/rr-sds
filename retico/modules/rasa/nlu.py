@@ -54,6 +54,7 @@ class RasaNLUModule(abstract.AbstractModule):
         concepts = {}
         for entity in result.get("entities"):
             concepts[entity["entity"]] = entity["value"]
+            concepts['{}_confidence'.format(entity["entity"])] = entity['confidence']
         act = result["intent"]["name"]
         confidence = result["intent"]["confidence"]
         #print('nlu', act, concepts, confidence)

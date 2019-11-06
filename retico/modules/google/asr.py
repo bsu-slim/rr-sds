@@ -4,7 +4,6 @@ A Module that offers different types of real time speech recognition.
 
 import queue
 import threading
-from retico.core.text import util
 from retico.core import abstract
 from retico.core.text.common import SpeechRecognitionIU
 from retico.core.audio.common import AudioIU

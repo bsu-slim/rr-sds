@@ -11,26 +11,25 @@ from retico.core.text.asr import IncrementalizeASRModule
 
 # run: export GOOGLE_APPLICATION_CREDENTIALS=/home/casey/substutute-ca5bdacf1d9a.json
 
-# model_dir = '/home/casey/git/defclar/models/nlu/model_20191021-103901' # incr rasa
-#model_dir = '/home/casey/git/defclar/models/nlu/model_20191021-180503'
 model_dir = '/home/casey/git/defclar/models/nlu_20191025-102321' # incr pipeline
-
 domain_dir = '/home/casey/git/PyOpenDial/domains/augi/augi.xml'
 
+# instantiate modules
 mic = MicrophoneModule(5000)
 gasr = GoogleASRModule()
 iasr = IncrementalizeASRModule()
 nlu = RasaNLUModule(model_dir=model_dir)
 dm = OpenDialModule(domain_dir=domain_dir)
 debug = DebugModule()
-#m2 = StreamingSpeakerModule(5000)
 
+# hook modules up to each other
 mic.subscribe(gasr)
 gasr.subscribe(iasr)
 iasr.subscribe(nlu)
 nlu.subscribe(dm)
 dm.subscribe(debug)
 
+# initialize modules
 mic.run()
 gasr.run()
 iasr.run()
@@ -38,7 +37,7 @@ nlu.run()
 dm.run()
 debug.run()
 
-input()
+input() # start streaming mic to ASR
 
 mic.stop()
 gasr.stop()
