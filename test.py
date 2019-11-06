@@ -29,7 +29,7 @@ mic.subscribe(gasr)
 gasr.subscribe(iasr)
 iasr.subscribe(nlu)
 nlu.subscribe(dm)
-#dm.subscribe(debug)
+dm.subscribe(debug)
 
 mic.run()
 gasr.run()

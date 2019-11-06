@@ -5,11 +5,13 @@ from multipledispatch import dispatch
 from retico.core import abstract
 from retico.core.dialogue.common import DialogueActIU
 from retico.core.dialogue.common import DialogueDecisionIU
+from retico.modules.opendial.concept_val import ConceptVal
 
 # opendial
 import sys
 sys.path.append("/home/casey/git/PyOpenDial")
 from dialogue_system import DialogueSystem
+from datastructs.assignment import Assignment
 from modules.simulation.simulator import Simulator
 from readers.xml_domain_reader import XMLDomainReader
 from bn.distribs.distribution_builder import CategoricalTableBuilder
@@ -52,21 +54,28 @@ class OpenDialModule(abstract.AbstractModule, Module):
         self._system = DialogueSystem()
         self.cache = None
         self._paused = True
+        self._input_iu = None
 
     def process_iu(self, input_iu):
-        print('dm add({})'.format(input_iu.payload))
+        self._input_iu = input_iu
         act, concepts = input_iu.payload
         confidence = input_iu.confidence
+        # print('dm add({},{})'.format(input_iu.payload, confidence))
 
         # TODO: incremental
         # TODO: partially observed
-        #cat_table = CategoricalTableBuilder(variable=str('intent'))
-        #cat_table.add_row(act, confidence)
-        #self.system.add_incremental_content(cat_table.build(), follow_previous=True)
-        self._system.add_content('intent', str(act))
+        self._system.add_content('intent', ConceptVal('intent',act,confidence))
 
         for concept in concepts: # TODO: get these concepts to come through the opendial config
-            self._system.add_content(concept, str(concepts[concept]))
+            if '_confidence' in concept: continue
+            conf = concepts['{}_confidence'.format(concept)]
+            self._system.add_content('concept', ConceptVal(concept, str(concepts[concept]), conf))
+        
+        # if not self._system.is_paused:
+        #     for concept in concepts:
+        #         iuval = IUVal(str(concepts[concept]), concepts['{}_confidence'.format(concept)])
+        #         self._cur_state.add_to_state(Assignment(concept, iuval))
+        #     self._system.update() # update once after everything is in
 
         return None # how to get a result from an attached output module?
 
@@ -93,8 +102,13 @@ class OpenDialModule(abstract.AbstractModule, Module):
     @dispatch(DialogueState, Collection)
     def trigger(self, state, update_vars):
         if 'decision' in update_vars and state.has_chance_node('decision'):
-           action = str(state.query_prob('decision').get_best())
-           print('decision', action)
+            action = str(state.query_prob('decision').get_best())
+            concept_val = state.query_prob('concept').get_best()
+            if isinstance(concept_val, ConceptVal):
+                output_iu = self.create_iu(self._input_iu)
+                output_iu.set_act(action, {concept_val._concept:concept_val._value}, concept_val._confidence)
+                self.append(output_iu)
+
 
     @dispatch(bool)
     def pause(self, to_pause):
