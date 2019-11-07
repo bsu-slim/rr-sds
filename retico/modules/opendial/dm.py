@@ -86,7 +86,8 @@ class OpenDialModule(abstract.AbstractModule, Module):
         return None
 
     def process_revoke(self, revoked_iu):
-        print('dm revoke({})'.format(revoked_iu.payload))
+        pass #for now
+        #print('dm revoke({})'.format(revoked_iu.payload))
 
 
     def setup(self):

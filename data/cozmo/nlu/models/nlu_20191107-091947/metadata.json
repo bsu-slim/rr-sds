@@ -1,0 +1,66 @@
+{
+    "language": "en",
+    "pipeline": [
+        {
+            "name": "IncrementalWhitespaceTokenizer",
+            "class": "rasa.nlu.tokenizers.incr_whitespace_tokenizer.IncrementalWhitespaceTokenizer"
+        },
+        {
+            "name": "IncrementalCRFEntityExtractor",
+            "file": "component_1_IncrementalCRFEntityExtractor_incr.pkl",
+            "class": "rasa.nlu.extractors.incr_crf_entity_extractor.IncrementalCRFEntityExtractor"
+        },
+        {
+            "use_shared_vocab": false,
+            "analyzer": "word",
+            "token_pattern": "(?u)\\b\\w\\w+\\b",
+            "strip_accents": null,
+            "stop_words": null,
+            "min_df": 1,
+            "max_df": 1.0,
+            "min_ngram": 1,
+            "max_ngram": 1,
+            "max_features": null,
+            "lowercase": true,
+            "OOV_token": null,
+            "OOV_words": [],
+            "name": "IncrementalCVF",
+            "“token_pattern”": "r’(?u)\\b\\w+\\b’",
+            "file": "component_2_IncrementalCVF.pkl",
+            "class": "rasa.nlu.featurizers.incr_count_vectors_featurizer.IncrementalCVF"
+        },
+        {
+            "hidden_layers_sizes_a": [
+                256,
+                128
+            ],
+            "hidden_layers_sizes_b": [],
+            "share_hidden_layers": false,
+            "batch_size": [
+                64,
+                256
+            ],
+            "batch_strategy": "balanced",
+            "epochs": 10,
+            "random_seed": null,
+            "embed_dim": 20,
+            "num_neg": 20,
+            "similarity_type": "auto",
+            "loss_type": "softmax",
+            "mu_pos": 0.8,
+            "mu_neg": -0.4,
+            "use_max_sim_neg": true,
+            "scale_loss": true,
+            "C2": 0.002,
+            "C_emb": 0.8,
+            "droprate": 0.2,
+            "evaluate_every_num_epochs": 20,
+            "evaluate_on_num_examples": 0,
+            "name": "IncrementalEIC",
+            "file": "component_3_IncrementalEIC",
+            "class": "rasa.nlu.classifiers.incr_embedding_intent_classifier.IncrementalEIC"
+        }
+    ],
+    "trained_at": "20191107-091947",
+    "rasa_version": "1.5.0a1"
+}

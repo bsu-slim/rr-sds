@@ -41,11 +41,10 @@ class CozmoAction(abstract.AbstractModule):
         self.robot = robot
 
     def run_clarify(self):
-        self.robot.say_text('uhh', in_parallel=True)
+        self.robot.say_text('uh', in_parallel=True)
 
     def run_command(self, commands):
         for command in commands:
-            print('performing {}'.format(command))
             if 'turn_left' == command:
                 self.robot.turn_in_place(degrees(60), in_parallel=True)#.wait_for_completed()
             if 'turn_right' == command:
@@ -72,8 +71,6 @@ class CozmoAction(abstract.AbstractModule):
     def process_iu(self, input_iu):
         
         decision,concepts = input_iu.payload
-        print('decision', decision)
-        print('concepts', concepts)
         if self.robot is None: return
         if 'select' == decision:
             self.run_command(concepts.keys())
