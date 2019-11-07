@@ -101,5 +101,6 @@ class IncrementalizeASRModule(abstract.AbstractModule):
         if output_iu.final:
             self.last_ius = []
             output_iu.committed = True
+            self.new_utterance()
 
         return output_iu

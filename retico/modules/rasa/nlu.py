@@ -49,6 +49,10 @@ class RasaNLUModule(abstract.AbstractModule):
         self.lb_hypotheses = []
         self.cache = None
         self.started_prediction = False
+    
+    def new_utterance(self):
+        self.interpreter.new_utterance()
+        super().new_utterance()
 
     def process_result(self, result, input_iu):
         concepts = {}
@@ -57,7 +61,7 @@ class RasaNLUModule(abstract.AbstractModule):
             concepts['{}_confidence'.format(entity["entity"])] = entity['confidence']
         act = result["intent"]["name"]
         confidence = result["intent"]["confidence"]
-        #print('nlu', act, concepts, confidence)
+        # print('nlu', act, concepts, confidence)
         output_iu = self.create_iu(input_iu)
         output_iu.set_act(act, concepts, confidence)
         piu = output_iu.previous_iu
@@ -76,7 +80,7 @@ class RasaNLUModule(abstract.AbstractModule):
         #print('asr', input_iu.get_text()) # TODO: asr is restart-incremental
         for word in input_iu.get_text().split():
             text_iu = (word, "add") # only handling add for now
-            print('nlu add({})'.format(word))
+            # print('nlu add({})'.format(word))
             result = self.interpreter.parse_incremental(text_iu)
         #print(result)
 
@@ -88,7 +92,7 @@ class RasaNLUModule(abstract.AbstractModule):
     def process_revoke(self, revoked_iu):
         for word in reversed(revoked_iu.get_text().split()):
             text_iu = (word, "revoke") 
-            print('nlu revoke({})'.format(word))
+            # print('nlu revoke({})'.format(word))
             result = self.interpreter.parse_incremental(text_iu)
         result = self.process_result(result, revoked_iu)
 

@@ -18,6 +18,7 @@ from bn.distribs.distribution_builder import CategoricalTableBuilder
 from dialogue_state import DialogueState
 from modules.module import Module
 from collections import Collection
+from bn.values.none_val import NoneVal
 
 
 class OpenDialModule(abstract.AbstractModule, Module):
@@ -56,6 +57,10 @@ class OpenDialModule(abstract.AbstractModule, Module):
         self._paused = True
         self._input_iu = None
 
+    # def new_utterance(self):
+    #     self._system.add_content('concept', ConceptVal('','',0)) 
+    #     super().new_utterance()
+
     def process_iu(self, input_iu):
         self._input_iu = input_iu
         act, concepts = input_iu.payload
@@ -66,7 +71,7 @@ class OpenDialModule(abstract.AbstractModule, Module):
         # TODO: partially observed
         self._system.add_content('intent', ConceptVal('intent',act,confidence))
 
-        for concept in concepts: # TODO: get these concepts to come through the opendial config
+        for concept in concepts: 
             if '_confidence' in concept: continue
             conf = concepts['{}_confidence'.format(concept)]
             self._system.add_content('concept', ConceptVal(concept, str(concepts[concept]), conf))
@@ -77,7 +82,7 @@ class OpenDialModule(abstract.AbstractModule, Module):
         #         self._cur_state.add_to_state(Assignment(concept, iuval))
         #     self._system.update() # update once after everything is in
 
-        return None # how to get a result from an attached output module?
+        return None
 
     def process_revoke(self, revoked_iu):
         print('dm revoke({})'.format(revoked_iu.payload))

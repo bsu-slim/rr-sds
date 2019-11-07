@@ -242,6 +242,17 @@ class AbstractModule:
         """
         raise NotImplementedError()
 
+    def new_utterance(self):
+        """ When an utterance is complete, any module
+        can call this to signal the end of an utterance to this
+        and following modules. All structures with utterance
+        history should be cleared.
+        """
+        self.previous_iu = None
+        self._iu_stack = []
+        for q in self._right_buffers:
+            q.consumer.new_utterance()
+
     def get_init_arguments(self):
         """Returns the arguments of the init function to create the current
         instance of the Module.
