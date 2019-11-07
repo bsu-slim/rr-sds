@@ -1,13 +1,15 @@
 """A module for Natural Language Understanding provided by rasa_nlu"""
 
+# retico
 from retico.core import abstract
 from retico.core.text.common import SpeechRecognitionIU
 from retico.core.dialogue.common import DialogueActIU
 
+# rasa
 import sys
-sys.path.append("/home/casey/git/rasa_nlu")
+import os
+sys.path.append(os.environ['RASA'])
 from rasa.nlu.model import IncrementalInterpreter as Interpreter
-#from rasa_nlu.model import Interpreter
 
 class RasaNLUModule(abstract.AbstractModule):
     """A standard rasa NLU module.

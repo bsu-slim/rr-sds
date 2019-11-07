@@ -1,0 +1,7 @@
+language: "en"
+pipeline: 
+- name: "rasa.nlu.tokenizers.incr_whitespace_tokenizer.IncrementalWhitespaceTokenizer"
+- name: "rasa.nlu.extractors.incr_crf_entity_extractor.IncrementalCRFEntityExtractor"
+- name: "rasa.nlu.featurizers.incr_count_vectors_featurizer.IncrementalCVF"
+  “token_pattern”: r’(?u)\b\w+\b’
+- name: "rasa.nlu.classifiers.incr_embedding_intent_classifier.IncrementalEIC"

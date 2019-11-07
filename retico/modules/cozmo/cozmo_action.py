@@ -4,11 +4,14 @@ import time
 import asyncio
 import sys
 
-
+# retico
 from retico.core import abstract
 from retico.core.dialogue.common import DialogueDecisionIU
 
-sys.path.append("/home/casey/git/cozmo-python-sdk/src")
+# cozmo
+import sys
+import os
+sys.path.append(os.environ['COZMO'])
 import cozmo
 from cozmo.util import degrees, distance_mm, speed_mmps
 
@@ -37,6 +40,9 @@ class CozmoAction(abstract.AbstractModule):
         self._force_viewer_on_top = force_viewer_on_top
         self.robot = robot
 
+    def run_clarify(self):
+        self.robot.say_text('uhh', in_parallel=True)
+
     def run_command(self, commands):
         for command in commands:
             print('performing {}'.format(command))
@@ -45,7 +51,7 @@ class CozmoAction(abstract.AbstractModule):
             if 'turn_right' == command:
                 self.robot.turn_in_place(degrees(-60), in_parallel=True)#.wait_for_completed()
             if 'forward' == command:
-                self.robot.drive_straight(distance_mm(1000), speed_mmps(50), in_parallel=True)#.wait_for_completed()
+                self.robot.drive_straight(distance_mm(1000), speed_mmps(100), in_parallel=True)#.wait_for_completed()
             if 'backup' == command:
                 self.robot.drive_straight(distance_mm(-200), speed_mmps(50), in_parallel=True)#.wait_for_completed()
             if 'lift_up' == command:
@@ -56,15 +62,12 @@ class CozmoAction(abstract.AbstractModule):
                 self.robot.set_head_angle(degrees(44.5), in_parallel=True)#.wait_for_completed()
             if 'look_down' == command:
                 self.robot.set_head_angle(degrees(-25), in_parallel=True)#.wait_for_completed()
+            if 'look_ahead' == command:
+                self.robot.set_head_angle(degrees(0), in_parallel=True)#.wait_for_completed()
             if 'halt' == command:
-                print('starting halt...')
                 self.robot.stop_all_motors()
                 while self.robot.is_moving:
-                    print('halting!!')
                     self.robot.stop_all_motors()
-            
-
-        #self.robot.say_text("got it").wait_for_completed()
 
     def process_iu(self, input_iu):
         
@@ -74,6 +77,8 @@ class CozmoAction(abstract.AbstractModule):
         if self.robot is None: return
         if 'select' == decision:
             self.run_command(concepts.keys())
+        if 'clarify' == decision:
+            self.run_clarify()
                 
                 
 
