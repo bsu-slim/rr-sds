@@ -61,6 +61,6 @@
             "class": "rasa.nlu.classifiers.incr_embedding_intent_classifier.IncrementalEIC"
         }
     ],
-    "trained_at": "20191107-091947",
+    "trained_at": "20191107-110224",
     "rasa_version": "1.5.0a1"
 }

@@ -39,6 +39,7 @@ class CozmoAction(abstract.AbstractModule):
         self._use_viewer = use_viewer
         self._force_viewer_on_top = force_viewer_on_top
         self.robot = robot
+        self._last_commands = None
 
     def run_clarify(self):
         self.robot.say_text('uh', in_parallel=True)
@@ -67,6 +68,12 @@ class CozmoAction(abstract.AbstractModule):
                 self.robot.stop_all_motors()
                 while self.robot.is_moving:
                     self.robot.stop_all_motors()
+            if 'repeat' == command:
+                if self._last_commands is not None:
+                    self.run_command(self._last_commands)
+                    return # don't want `repeat` to be the last command
+
+        self._last_commands = commands
 
     def process_iu(self, input_iu):
         
@@ -76,12 +83,7 @@ class CozmoAction(abstract.AbstractModule):
             self.run_command(concepts.keys())
         if 'clarify' == decision:
             self.run_clarify()
-                
-                
-
-    # def _init_cozmo(self, robot: cozmo.robot.Robot):
-    #def _init_cozmo(self, robot: cozmo.robot.Robot):
-    #    self.robot = robot
+        
 
     def setup(self):
         pass

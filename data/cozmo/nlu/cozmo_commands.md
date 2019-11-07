@@ -32,3 +32,7 @@
 - [stop](halt)
 - [wait](halt)
 - [halt](halt)
+- [again](repeat)
+- [repeat](repeat)
+- [try again](repeat)
+- [keep going](repeat)
