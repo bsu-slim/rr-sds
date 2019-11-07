@@ -9,7 +9,8 @@ from retico.modules.opendial.concept_val import ConceptVal
 
 # opendial
 import sys
-sys.path.append("/home/casey/git/PyOpenDial")
+import os
+sys.path.append(os.environ['PYOD'])
 from dialogue_system import DialogueSystem
 from datastructs.assignment import Assignment
 from modules.simulation.simulator import Simulator
