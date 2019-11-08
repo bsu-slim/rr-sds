@@ -1,5 +1,6 @@
 import sys
-sys.path.append("/home/casey/git/PyOpenDial")
+import os
+sys.path.append(os.environ['PYOD'])
 
 from bn.values.double_val import DoubleVal
 from bn.values.value import Value
