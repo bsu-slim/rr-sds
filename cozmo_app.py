@@ -17,6 +17,7 @@ from retico.modules.rasa.nlu import RasaNLUModule
 from retico.modules.opendial.dm import OpenDialModule
 from retico.core.text.asr import IncrementalizeASRModule
 from retico.modules.cozmo.cozmo_action import CozmoAction
+from retico.core.audio.io import RespeakerMicrophoneModule
 
 from retico.core.text.common import SpeechRecognitionIU
 
@@ -29,12 +30,13 @@ import cozmo
 
 def init_all(robot : cozmo.robot.Robot):
 
-    model_dir = '/home/casey/git/retico/data/cozmo/nlu/models/nlu_20191107-091947' # incr nlu pipeline
+    model_dir = '/home/casey/git/retico/data/cozmo/nlu/models/nlu_20191107-110224' # incr nlu pipeline
     domain_dir = '/home/casey/git/retico/data/cozmo/dm/dialogue.xml'
 
     # instantiate modules
-    mic = MicrophoneModule(5000)
-    gasr = GoogleASRModule()
+    # mic = MicrophoneModule(5000)
+    mic = RespeakerMicrophoneModule('10.29.3.148:8000')
+    gasr = GoogleASRModule(rate=16000)
     iasr = IncrementalizeASRModule()
     nlu = RasaNLUModule(model_dir=model_dir)
     dm = OpenDialModule(domain_dir=domain_dir)
@@ -64,4 +66,4 @@ def init_all(robot : cozmo.robot.Robot):
     dm.stop()
     cozmo.stop()
 
-cozmo.run_program(init_all, use_viewer=True, force_viewer_on_top=False)
+cozmo.run_program(init_all, use_viewer=False, force_viewer_on_top=False)
