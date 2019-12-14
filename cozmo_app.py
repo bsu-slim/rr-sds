@@ -4,6 +4,7 @@ import time
 # set vars before importing modules
 import os
 import sys
+os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-ca5bdacf1d9a.json'
 os.environ['PYOD'] = '/home/casey/git/PyOpenDial'
 os.environ['RASA'] = "/home/casey/git/rasa_nlu"
 os.environ['COZMO'] = "/home/casey/git/cozmo-python-sdk/src"
