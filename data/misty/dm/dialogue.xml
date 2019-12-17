@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<domain>
+
+
+	<initialstate>
+		<variable id="concept"><value>null</value></variable>
+		<variable id="confirmState"><value>false</value></variable>
+	</initialstate>
+
+	<model trigger="concept">
+	
+	
+		<rule id="ruleClarify">
+			<case>
+				<condition>
+					<if var="concept" relation="&gt;" value="0.30"/>
+					<if var="concept" relation="&lt;" value="0.39"/>
+				</condition>
+				<effect>
+					<set var="decision" value="clarify"/>
+					<set var="confirmState" value="true"/>
+				</effect>				
+			</case>
+		</rule>	
+	
+		<rule id="ruleSelect">
+			<case>
+				<condition>
+					<if var="concept" relation="&gt;" value="0.4"/>
+				</condition>
+				<effect>
+					<set var="decision" value="select"/>
+				</effect>				
+			</case>
+		</rule>
+		
+		<rule id="ruleWait">
+			<case>
+				<condition>
+ 					<if var="concept" relation="&lt;" value="0.29"/>
+				</condition>
+				<effect>
+					<set var="decision" value="wait"/>
+				</effect>				
+			</case>
+		</rule>		
+		
+	</model>
+
+</domain>

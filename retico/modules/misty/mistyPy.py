@@ -24,9 +24,9 @@ class Robot:
 
         self.available_subscriptions = ["SerialMessage", "TimeOfFlight","FaceRecognition","LocomotionCommand","HaltCommand","SelfState","WorldState"]
 
-        self.populateImages()
-        self.populateAudio()
-        self.populateLearnedFaces()
+        #self.populateImages()
+        #self.populateAudio()
+        #self.populateLearnedFaces()
 
     def changeLED(self,red,green,blue):
         assert red in range(0,256) and blue in range(0,256) and green in range(0,256), " changeLED: The colors need to be in 0-255 range"

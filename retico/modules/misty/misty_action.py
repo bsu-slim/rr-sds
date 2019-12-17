@@ -76,4 +76,4 @@ class MistyAction(abstract.AbstractModule):
         
 
     def setup(self):
-        pass        
+        print("Misty starting up.")        

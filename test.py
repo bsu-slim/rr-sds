@@ -24,29 +24,29 @@ model_dir = '/home/casey/git/defclar/models/nlu_20191025-102321' # incr pipeline
 domain_dir = '/home/casey/git/PyOpenDial/domains/augi/augi.xml'
 
 # instantiate modules
-mic = MicrophoneModule(5000)
+mic = MicrophoneModule(1000)
 # mic = RespeakerMicrophoneModule('10.29.3.148:8000')
 #asr = AzureASRModule("179eaa4b8fc54e0fa5115ba5d14883f2")
 #asr = GoogleASRModule(rate=16000)
 asr = GoogleASRModule()
-iasr = IncrementalizeASRModule()
-nlu = RasaNLUModule(model_dir=model_dir)
-dm = OpenDialModule(domain_dir=domain_dir)
+# iasr = IncrementalizeASRModule()
+# nlu = RasaNLUModule(model_dir=model_dir)
+# dm = OpenDialModule(domain_dir=domain_dir)
 debug = DebugModule()
 
 # hook modules up to each other
 mic.subscribe(asr)
-asr.subscribe(iasr)
-iasr.subscribe(nlu)
-nlu.subscribe(dm)
-dm.subscribe(debug)
+asr.subscribe(debug)
+# iasr.subscribe(nlu)
+# nlu.subscribe(dm)
+# dm.subscribe(debug)
 
 # initialize modules
 mic.run()
 asr.run()
-iasr.run()
-nlu.run()
-dm.run()
+# iasr.run()
+# nlu.run()
+# dm.run()
 debug.run()
 
 input() # start streaming mic to ASR

@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/casey/git/retico/data/misty/nlu/models/nlu_20191216-180455/component_3_IncrementalEIC.ckpt"
+all_model_checkpoint_paths: "/home/casey/git/retico/data/misty/nlu/models/nlu_20191216-180455/component_3_IncrementalEIC.ckpt"

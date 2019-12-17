@@ -79,7 +79,7 @@ class RasaNLUModule(abstract.AbstractModule):
 
     def process_iu(self, input_iu):
 
-        #print('asr', input_iu.get_text()) # TODO: asr is restart-incremental
+        # print('asr', input_iu.get_text()) # TODO: asr is restart-incremental
         for word in input_iu.get_text().split():
             text_iu = (word, "add") # only handling add for now
             # print('nlu add({})'.format(word))
