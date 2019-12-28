@@ -51,7 +51,7 @@ class DialogueActIU(abstract.IncrementalUnit):
         if concepts:
             self.concepts = concepts
         self.confidence = confidence
-        self.payload = (act, concepts)
+        self.payload = {'act':act, 'concepts':concepts, 'confidence':confidence}
 
 
 class DispatchableActIU(DialogueActIU):
@@ -115,4 +115,4 @@ class DialogueDecisionIU(abstract.IncrementalUnit):
         if concepts:
             self.concepts = concepts
         self.confidence = confidence
-        self.payload = (decision, concepts)
+        self.payload = {'decision':decision, 'concepts':concepts}

@@ -98,16 +98,9 @@ class ZeroMQReader(abstract.AbstractProducingModule):
         j = json.loads(message)
         output_iu = self.create_iu()
         output_iu.set_payload(j)
-        #msg = j['message']
-        #if "Text" in msg:
-        #    output_iu = self.create_iu()
-        #    output_iu.set_payload(repr(msg['Text']))
-        #    return output_iu
 
         return output_iu
 
-            # print("Message: ", repr(msg['Text']))
-            # print("Originating Time: ", repr(j['originatingTime']))
 
     def prepare_run(self):
         self.reader = ReaderSingleton.getInstance().socket

@@ -64,8 +64,9 @@ class OpenDialModule(abstract.AbstractModule, Module):
 
     def process_iu(self, input_iu):
         self._input_iu = input_iu
-        act, concepts = input_iu.payload
-        confidence = input_iu.confidence
+        act = input_iu.payload['act']
+        concepts = input_iu.payload['concepts']
+        confidence = input_iu.payload['confidence']
         # print('dm add({},{})'.format(input_iu.payload, confidence))
 
         # TODO: incremental
