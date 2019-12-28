@@ -37,7 +37,7 @@ class RasaNLUModule(abstract.AbstractModule):
     def output_iu():
         return DialogueActIU
 
-    def __init__(self, model_dir, incremental=False, **kwargs):
+    def __init__(self, model_dir, incremental=True, **kwargs):
         """Initializes the RasaNLUModule.
 
         Args:
@@ -78,25 +78,27 @@ class RasaNLUModule(abstract.AbstractModule):
         return output_iu
 
     def process_iu(self, input_iu):
-
-        # print('asr', input_iu.get_text()) # TODO: asr is restart-incremental
-        for word in input_iu.get_text().split():
-            text_iu = (word, "add") # only handling add for now
-            # print('nlu add({})'.format(word))
-            result = self.interpreter.parse_incremental(text_iu)
-        #print(result)
-
-        #result = self.interpreter.parse(input_iu.get_text())
-        #print(result)
-        return self.process_result(result, input_iu)
+        if self.incremental:
+            result = None
+            for word in input_iu.get_text().split():
+                text_iu = (word, "add") # only handling add for now
+                result = self.interpreter.parse_incremental(text_iu)
+        else:
+            result = self.interpreter.parse(input_iu.get_text())
+        
+        if result is not None:
+            p_result = self.process_result(result, input_iu)
+            return p_result
         
 
     def process_revoke(self, revoked_iu):
+        result =  None
         for word in reversed(revoked_iu.get_text().split()):
             text_iu = (word, "revoke") 
             # print('nlu revoke({})'.format(word))
             result = self.interpreter.parse_incremental(text_iu)
-        result = self.process_result(result, revoked_iu)
+        if result is not None:
+            result = self.process_result(result, revoked_iu)
 
         if len(self._iu_stack) > 0:
             last_output_iu = self._iu_stack.pop()
@@ -106,3 +108,5 @@ class RasaNLUModule(abstract.AbstractModule):
 
     def setup(self):
         self.interpreter = Interpreter.load(self.model_dir)
+
+
