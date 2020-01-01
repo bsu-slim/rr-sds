@@ -151,7 +151,6 @@ class RespeakerMicrophoneModule(abstract.AbstractProducingModule):
         self.sio.emit('pause')
         self.audio_buffer = queue.Queue()
 
-
 class MicrophoneModule(abstract.AbstractProducingModule):
     """A module that produces IUs containing audio signals that are captures by
     a microphone."""
@@ -170,7 +169,6 @@ class MicrophoneModule(abstract.AbstractProducingModule):
 
     def callback(self, in_data, frame_count, time_info, status):
         """The callback function that gets called by pyaudio.
-
         Args:
             in_data (bytes[]): The raw audio that is coming in from the
                 microphone
@@ -182,7 +180,6 @@ class MicrophoneModule(abstract.AbstractProducingModule):
     def __init__(self, chunk_size, rate=44100, sample_width=2, **kwargs):
         """
         Initialize the Microphone Module.
-
         Args:
             chunk_size (int): The number of frames that should be stored in one
                 AudioIU
@@ -231,8 +228,7 @@ class MicrophoneModule(abstract.AbstractProducingModule):
         self.stream.close()
         self.stream = None
         self.audio_buffer = queue.Queue()
-
-
+        
 class SpeakerModule(abstract.AbstractConsumingModule):
     """A module that consumes AudioIUs of arbitrary size and outputs them to the
     speakers of the machine. When a new IU is incoming, the module blocks as

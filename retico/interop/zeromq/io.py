@@ -114,7 +114,12 @@ class ZeroMQWriter(abstract.AbstractModule):
 
     """A ZeroMQ Writer Module
 
+    Note: If you are using this to pass IU payloads to PSI, make sure you're passing JSON-formatable stuff (i.e., dicts not tuples)
+
     Attributes:
+    topic (str): topic/scope that this writes to
+
+
         
     """
     @staticmethod
