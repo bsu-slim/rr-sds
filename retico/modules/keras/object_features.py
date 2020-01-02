@@ -9,6 +9,9 @@ from retico.core.visual.common import ObjectFeaturesIU
 from keras.preprocessing import image
 from keras.applications.inception_v3 import InceptionV3, preprocess_input
 from keras.models import Model
+from tensorflow.python.keras.backend import set_session
+from tensorflow.python.keras.models import load_model
+import tensorflow as tf
 
 # other
 import numpy as np
@@ -37,7 +40,7 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
     def output_iu():
         return ObjectFeaturesIU
 
-    def __init__(self, layer='avg_pool', weights='imagenet', xs=224, ys=224, **kwargs):
+    def __init__(self, layer='predictions', weights='imagenet', xs=299, ys=299, **kwargs):
         """Initializes the object feature detector module
 
         Args:
@@ -48,8 +51,14 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         self.layer = layer
         self.xs = xs
         self.ys = ys
-        base_model = InceptionV3(weights=self.weights,include_top=True)
-        self.model = Model(inputs=base_model.input, outputs=base_model.get_layer(self.layer).output)
+        self.session = tf.Session(graph=tf.Graph())
+        with self.session.graph.as_default():
+            set_session(self.session)
+            base_model = InceptionV3(weights=self.weights,include_top=True)
+            self.model = Model(inputs=base_model.input, outputs=base_model.get_layer(self.layer).output)
+        
+        
+        
         print('Feature extractor module setup complete.')
 
     def get_bounded_subimage(self, I, img_box):
@@ -71,19 +80,24 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         if len(sub) == 0: return None
         pim = PImage.fromarray(sub)
         pim2 = pim.resize((self.xs,self.ys), PImage.ANTIALIAS)
-        img = np.array(pim2, dtype=np.float32)
-        if len(img.shape) < 3: return None
-        img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
+        #img = np.array(pim2, dtype=np.float32)
+        img = image.img_to_array(pim2)
+        img = np.expand_dims(img, axis=0)
+        #if len(img.shape) < 3: return None
+        #img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
         return img
 
     def get_img_features(self, img):
         img = preprocess_input(img)
-        yhat = self.model.predict(img)
-        return yhat
+        with self.session.graph.as_default():
+            set_session(self.session)
+            yhat = self.model.predict(img)
+            return yhat
 
     def process_iu(self, input_iu):
         image = input_iu.image
         detected_objects = input_iu.detected_objects
+        print(detected_objects)
         object_features = {}
         for obj in detected_objects:
             obj_info = detected_objects[obj]

@@ -75,10 +75,8 @@ class AzureObjectDetectionModule(abstract.AbstractModule):
 
     def process_iu(self, input_iu):
         image = input_iu.payload
-
         dim = (self.width, self.height)
         image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
-        
         cv2.imwrite(self.f, image)
         try:
             with open(self.f, "rb") as image_fd:
