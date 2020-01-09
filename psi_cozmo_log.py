@@ -66,6 +66,8 @@ def init_all(robot : cozmo.robot.Robot):
     iasr_psi = ZeroMQWriter(topic='asr')
     nlu_psi = ZeroMQWriter(topic='nlu')
     dm_psi = ZeroMQWriter(topic='dm')
+    obj_det_psi = ZeroMQWriter(topic='obj_det')
+    feat_ext_psi = ZeroMQWriter(topic='feat_ext')
    
     # hook modules up to each other
     mic.subscribe(asr)
@@ -83,6 +85,8 @@ def init_all(robot : cozmo.robot.Robot):
     iasr.subscribe(iasr_psi)
     nlu.subscribe(nlu_psi)
     dm.subscribe(dm_psi)
+    feat_ext.subscribe(feat_ext_psi)
+    obj_det.subscribe(obj_det_psi)
 
     dm.subscribe(cozmo_action)
 
@@ -101,6 +105,8 @@ def init_all(robot : cozmo.robot.Robot):
     dm_psi.run()
     nlu_psi.run()
     iasr_psi.run()
+    feat_ext_psi.run()
+    obj_det_psi.run()
 
     input() # keep everything running
 
@@ -117,5 +123,7 @@ def init_all(robot : cozmo.robot.Robot):
     dm_psi.stop()
     iasr_psi.stop()
     nlu_psi.stop()
+    obj_det_psi.stop()
+    feat_ext_psi.stop()
 
 cozmo.run_program(init_all, use_viewer=True, force_viewer_on_top=False)

@@ -21,7 +21,7 @@ class ImageIU(abstract.IncrementalUnit):
 
     @staticmethod
     def type():
-        return "Audio IU"
+        return "Image IU"
 
     def __init__(self, creator=None, iuid=0, previous_iu=None, grounded_in=None,
                  rate=None, nframes=None, image=None,
