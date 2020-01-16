@@ -16,7 +16,7 @@ import cozmo
 from cozmo.util import degrees, distance_mm, speed_mmps
 
 
-class CozmoAction(abstract.AbstractModule):
+class CozmoActionModule(abstract.AbstractModule):
 
     @staticmethod
     def name():

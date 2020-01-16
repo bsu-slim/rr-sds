@@ -18,7 +18,7 @@ from retico.modules.opendial.dm import OpenDialModule
 from retico.core.text.asr import IncrementalizeASRModule
 from retico.core.audio.io import RespeakerMicrophoneModule
 from retico.modules.misty.misty_action import MistyAction
-
+from retico.core.audio.io import RespeakerMicrophoneModule
 from retico.core.text.common import SpeechRecognitionIU
 
 # Make sure you're on the same network as Misty!
@@ -26,17 +26,21 @@ from retico.core.text.common import SpeechRecognitionIU
 # had to change is_running to _is_running because opendial modules have an is_running() method
 # run: export GOOGLE_APPLICATION_CREDENTIALS=/home/casey/substutute-ca5bdacf1d9a.json
 
-model_dir = '/home/casey/git/retico/data/misty/nlu/models/nlu_20191216-180455' # incr nlu pipeline
+model_dir = '/home/casey/git/retico/data/misty/nlu/models/nlu_20191217-145005' # incr nlu pipeline
 domain_dir = '/home/casey/git/retico/data/misty/dm/dialogue.xml'
+misty_ip = "10.10.0.7"
+respeaker_ip_port = '10.10.7.45:8000'
 
 # instantiate modules
 mic = MicrophoneModule(1000)
-debug = DebugModule()
 gasr = GoogleASRModule()
+# mic = RespeakerMicrophoneModule(respeaker_ip_port)
+# gasr = GoogleASRModule(rate=16000)
 iasr = IncrementalizeASRModule()
 nlu = RasaNLUModule(model_dir=model_dir)
 dm = OpenDialModule(domain_dir=domain_dir)
-misty = MistyAction("10.10.0.7")
+misty = MistyAction(misty_ip)
+debug = DebugModule()
 
 
 # hook modules up to each other
@@ -45,7 +49,7 @@ gasr.subscribe(iasr)
 iasr.subscribe(nlu)
 nlu.subscribe(dm)
 dm.subscribe(misty)
-nlu.subscribe(debug)
+dm.subscribe(debug)
 
 # initialize modules
 mic.run()

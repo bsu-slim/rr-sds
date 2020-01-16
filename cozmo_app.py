@@ -35,7 +35,7 @@ def init_all(robot : cozmo.robot.Robot):
     domain_dir = '/home/casey/git/retico/data/cozmo/dm/dialogue.xml'
 
     # instantiate modules
-    # mic = MicrophoneModule(5000)
+    # mic = MicrophoneModule(1000)
     mic = RespeakerMicrophoneModule('10.29.3.148:8000')
     gasr = GoogleASRModule(rate=16000)
     iasr = IncrementalizeASRModule()

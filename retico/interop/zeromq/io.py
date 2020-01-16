@@ -104,7 +104,7 @@ class ZeroMQReader(abstract.AbstractProducingModule):
 
     def prepare_run(self):
         self.reader = ReaderSingleton.getInstance().socket
-        self.reader.setsockopt(zmq.SUBSCRIBE, self.topic)
+        self.reader.setsockopt(zmq.SUBSCRIBE, self.topic.encode())
 
     def setup(self):
         pass

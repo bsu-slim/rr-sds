@@ -7,11 +7,12 @@ from retico.core.visual.common import ObjectFeaturesIU
 
 # keras
 from keras.preprocessing import image
-from keras.applications.inception_v3 import InceptionV3, preprocess_input
 from keras.models import Model
 from tensorflow.python.keras.backend import set_session
 from tensorflow.python.keras.models import load_model
 import tensorflow as tf
+
+
 
 # other
 import numpy as np
@@ -40,7 +41,7 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
     def output_iu():
         return ObjectFeaturesIU
 
-    def __init__(self, layer='predictions', weights='imagenet', xs=299, ys=299, **kwargs):
+    def __init__(self, model_type='efficientnet', layer='probs', weights='imagenet', **kwargs):
         """Initializes the object feature detector module
 
         Args:
@@ -49,16 +50,26 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         super().__init__(**kwargs)
         self.weights = weights
         self.layer = layer
-        self.xs = xs
-        self.ys = ys
         self.session = tf.Session(graph=tf.Graph())
+        self.pre_input = None
         with self.session.graph.as_default():
             set_session(self.session)
-            base_model = InceptionV3(weights=self.weights,include_top=True)
+
+            if model_type == 'efficientnet':
+                from efficientnet.keras import EfficientNetB0
+                from efficientnet.keras import preprocess_input
+                self.pre_input = preprocess_input
+                base_model = EfficientNetB0(weights=self.weights)
+                self.xs,self.ys=224,224
+
+            if model_type == 'inveptionv3':
+                from keras.applications.inception_v3 import InceptionV3, preprocess_input
+                base_model = InceptionV3(weights=self.weights,include_top=True)
+                self.pre_input = preprocess_input
+                self.xs,self.ys=299,299
+                
+            # allow for other output layers
             self.model = Model(inputs=base_model.input, outputs=base_model.get_layer(self.layer).output)
-        
-        
-        
         print('Feature extractor module setup complete.')
 
     def get_bounded_subimage(self, I, img_box):
@@ -88,7 +99,7 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         return img
 
     def get_img_features(self, img):
-        img = preprocess_input(img)
+        img = self.pre_input(img)
         with self.session.graph.as_default():
             set_session(self.session)
             yhat = self.model.predict(img)
@@ -97,13 +108,12 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
     def process_iu(self, input_iu):
         image = input_iu.image
         detected_objects = input_iu.detected_objects
-        print(detected_objects)
         object_features = {}
         for obj in detected_objects:
             obj_info = detected_objects[obj]
             sub_img = self.get_bounded_subimage(image, obj_info)
             feats = self.get_img_features(sub_img).flatten()
-            object_features[obj] = feats
+            object_features[obj] = feats.tolist()
         
         output_iu = self.create_iu(input_iu)
         output_iu.set_object_features(image, object_features)
