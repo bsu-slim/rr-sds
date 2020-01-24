@@ -58,7 +58,7 @@ class AzureObjectDetectionModule(abstract.AbstractModule):
                         CognitiveServicesCredentials(COMPUTER_VISION_SUBSCRIPTION_KEY))
 
 
-    def __init__(self, key, endpoint, width=50, height=50, **kwargs):
+    def __init__(self, key, endpoint, width=200, height=200, **kwargs):
         """Initializes the object detector module, authenticates with Azure/MS Cognitive Services.
 
         Args:
@@ -75,9 +75,9 @@ class AzureObjectDetectionModule(abstract.AbstractModule):
 
     def process_iu(self, input_iu):
         image = input_iu.payload
-        dim = (self.width, self.height)
-        image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
-        cv2.imwrite(self.f, image)
+        # dim = (self.width, self.height)
+        # image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
+        cv2.imwrite(self.f, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
         try:
             with open(self.f, "rb") as image_fd:
                 detected_objects = self.client.detect_objects_in_stream(image_fd)
@@ -94,6 +94,7 @@ class AzureObjectDetectionModule(abstract.AbstractModule):
                         inner_dict['y1'] = object.rectangle.y
                         inner_dict['y2'] = object.rectangle.y + object.rectangle.h
                         inner_dict['label'] = object.object_property
+                        print(inner_dict)
                         returning_dictionary["object"+str(count)] = inner_dict
 
                     output_iu = self.create_iu(input_iu)
