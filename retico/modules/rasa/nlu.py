@@ -51,6 +51,7 @@ class RasaNLUModule(abstract.AbstractModule):
         self.lb_hypotheses = []
         self.cache = None
         self.started_prediction = False
+        self.interpreter = Interpreter.load(self.model_dir)
     
     def new_utterance(self):
         self.interpreter.new_utterance()
@@ -107,6 +108,6 @@ class RasaNLUModule(abstract.AbstractModule):
         return result
 
     def setup(self):
-        self.interpreter = Interpreter.load(self.model_dir)
+        pass
 
 

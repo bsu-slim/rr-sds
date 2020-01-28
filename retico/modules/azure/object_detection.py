@@ -1,5 +1,10 @@
 """A module for object detection provided by azure"""
 
+
+from collections import deque
+import threading
+import time
+
 # retico
 from retico.core import abstract
 from retico.core.visual.common import ImageIU
@@ -72,37 +77,51 @@ class AzureObjectDetectionModule(abstract.AbstractModule):
         self.width = width
         self.height = height
         self.f = 'tmp{}.png'.format(random())
+        self.queue = deque()
 
     def process_iu(self, input_iu):
-        image = input_iu.payload
-        # dim = (self.width, self.height)
-        # image = cv2.resize(image, dim, interpolation = cv2.INTER_AREA)
-        cv2.imwrite(self.f, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
-        try:
-            with open(self.f, "rb") as image_fd:
-                detected_objects = self.client.detect_objects_in_stream(image_fd)
-                if len(detected_objects.objects) == 0:
-                    return None
-                else:
-                    returning_dictionary = {}
-                    count = 0
-                    for object in detected_objects.objects:
-                        count += 1
-                        inner_dict = {}
-                        inner_dict['x1'] = object.rectangle.x
-                        inner_dict['x2'] = object.rectangle.x + object.rectangle.w
-                        inner_dict['y1'] = object.rectangle.y
-                        inner_dict['y2'] = object.rectangle.y + object.rectangle.h
-                        inner_dict['label'] = object.object_property
-                        print(inner_dict)
-                        returning_dictionary["object"+str(count)] = inner_dict
 
-                    output_iu = self.create_iu(input_iu)
-                    output_iu.set_detected_objects(image, returning_dictionary)
-                    return output_iu
-        except FileNotFoundError:
-            print("The file, {}, was not found.".format(image_file_path))
-            exit(1)
+        self.queue.clear() # drop frames, if still waiting
+        self.queue.append(input_iu)
+
+        return None
+
+    def run_detector(self):
+
+        while True:
+            if len(self.queue) == 0:
+                time.sleep(0.1)
+                continue
+            input_iu = self.queue.popleft()
+            image = input_iu.payload
+            cv2.imwrite(self.f, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+            try:
+                with open(self.f, "rb") as image_fd:
+                    detected_objects = self.client.detect_objects_in_stream(image_fd)
+                    # print(detected_objects)
+                    if len(detected_objects.objects) == 0:
+                        return None
+                    else:
+                        returning_dictionary = {}
+                        count = 0
+                        for object in detected_objects.objects:
+                            count += 1
+                            inner_dict = {}
+                            inner_dict['x1'] = object.rectangle.x
+                            inner_dict['x2'] = object.rectangle.x + object.rectangle.w
+                            inner_dict['y1'] = object.rectangle.y
+                            inner_dict['y2'] = object.rectangle.y + object.rectangle.h
+                            inner_dict['label'] = object.object_property
+                            returning_dictionary["object"+str(count)] = inner_dict
+                        returning_dictionary['num_objs'] = len(returning_dictionary)
+                        output_iu = self.create_iu(input_iu)
+                        output_iu.set_detected_objects(image, returning_dictionary)
+                        self.append(output_iu)
+            except FileNotFoundError:
+                print("The file, {}, was not found.".format(image_file_path))
+                exit(1)
 
     def setup(self):
         self.authenticate()
+        t = threading.Thread(target=self.run_detector)
+        t.start()

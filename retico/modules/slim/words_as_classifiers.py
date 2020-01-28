@@ -5,6 +5,7 @@ from retico.core import abstract
 from retico.core.visual.common import ObjectFeaturesIU
 from retico.core.text.common import SpeechRecognitionIU
 from retico.modules.slim.wac import WAC
+from retico.modules.slim.common import GroundedFrameIU
 
 import numpy as np
 import os
@@ -34,7 +35,7 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
 
     @staticmethod
     def output_iu():
-        return None
+        return GroundedFrameIU
 
     def __init__(self, wac_dir, **kwargs):
         """Loads the WAC models.
@@ -48,25 +49,28 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
 
     def process_iu(self, input_iu):
 
-        if type(input_iu) == SpeechRecognitionIU:
+        frame = {}
+        if isinstance(input_iu, SpeechRecognitionIU):
             self.word_buffer = input_iu.get_text().split()[0]
-            return
+            frame['word_to_find'] = self.word_buffer
         
         # when new objects are observed (i.e., not SpeechRecognitionIUs)
+        if isinstance(input_iu, ObjectFeaturesIU):
+            self.word_buffer = 'red'
+            objects = input_iu.payload
+            # WAC wants a list of intents (objectIDs) and their corresponding features in a tuple
+            intents = objects.keys()
+            features = [np.array(objects[obj_id]) for obj_id in objects]
+            
+            if self.word_buffer is not None:
+                target = self.wac.best_object(self.word_buffer, (intents, features))
+                frame['best_object'] = '{}({})'.format(target[0], target[1])
 
-        objects = input_iu.payload
-        # WAC wants a list of intents (objectIDs) and their corresponding features in a tuple
-        intents = objects.keys()
-        features = [np.array(objects[obj_id]) for obj_id in objects]
-        
-        if self.word_buffer is not None:
-            target = self.wac.best_object(self.word_buffer, (intents, features))
-            print(target)
-           
-        # output_iu = self.create_iu(input_iu)
-        # return output_iu
+        if len(frame) == 0: return None
+        output_iu = self.create_iu(input_iu)
+        output_iu.set_frame(frame)
+        return output_iu
 
-        return None
 
 
     def setup(self):

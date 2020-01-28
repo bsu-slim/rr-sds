@@ -110,6 +110,7 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         detected_objects = input_iu.detected_objects
         object_features = {}
         for obj in detected_objects:
+            if 'object' not in obj: continue # objects are prefixed by 'object'
             obj_info = detected_objects[obj]
             sub_img = self.get_bounded_subimage(image, obj_info)
             feats = self.get_img_features(sub_img).flatten()

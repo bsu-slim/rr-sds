@@ -68,7 +68,7 @@ class DetectedObjectsIU(abstract.IncrementalUnit):
         self.image = image
         self.payload = detected_objects
         self.detected_objects = detected_objects
-        self.num_objects = len(detected_objects)
+        self.num_objects = detected_objects['num_objs']
 
 class ObjectFeaturesIU(abstract.IncrementalUnit):
     """An image incremental unit that maintains a list of feature vectors for detected objects in a scene.

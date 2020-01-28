@@ -3,9 +3,11 @@ from multipledispatch import dispatch
 
 # retico
 from retico.core import abstract
+from retico.core.abstract import IncrementalUnit
 from retico.core.dialogue.common import DialogueActIU
 from retico.core.dialogue.common import DialogueDecisionIU
 from retico.modules.opendial.concept_val import ConceptVal
+from retico.core.robot.common import RobotStateIU
 
 # opendial
 import sys
@@ -39,13 +41,13 @@ class OpenDialModule(abstract.AbstractModule, Module):
 
     @staticmethod
     def input_ius():
-        return [DialogueActIU]
+        return [DialogueActIU,IncrementalUnit]
 
     @staticmethod
     def output_iu():
         return DialogueDecisionIU
 
-    def __init__(self, domain_dir, **kwargs):
+    def __init__(self, domain_dir, variables=None, **kwargs):
         """Initializes the OpenDialModule.
 
         Args:
@@ -57,32 +59,56 @@ class OpenDialModule(abstract.AbstractModule, Module):
         self.cache = None
         self._paused = True
         self._input_iu = None
+        self._variables = variables
+        self._prior_state = {}
 
     # def new_utterance(self):
     #     self._system.add_content('concept', ConceptVal('','',0)) 
     #     super().new_utterance()
 
     def process_iu(self, input_iu):
-        self._input_iu = input_iu
-        act = input_iu.payload['act']
-        concepts = input_iu.payload['concepts']
-        confidence = input_iu.payload['confidence']
-        # print('dm add({},{})'.format(input_iu.payload, confidence))
 
-        # TODO: incremental
-        # TODO: partially observed
-        self._system.add_content('intent', ConceptVal('intent',act,confidence))
+        if type(input_iu) == DialogueActIU:
+            self._input_iu = input_iu
+            act = input_iu.payload['act']
+            concepts = input_iu.payload['concepts']
+            confidence = input_iu.payload['confidence']
+            # print('dm add({},{})'.format(input_iu.payload, confidence))
 
-        for concept in concepts: 
-            if '_confidence' in concept: continue
-            conf = concepts['{}_confidence'.format(concept)]
-            self._system.add_content('concept', ConceptVal(concept, str(concepts[concept]), conf))
-        
-        # if not self._system.is_paused:
-        #     for concept in concepts:
-        #         iuval = IUVal(str(concepts[concept]), concepts['{}_confidence'.format(concept)])
-        #         self._cur_state.add_to_state(Assignment(concept, iuval))
-        #     self._system.update() # update once after everything is in
+            # TODO: incremental
+            # TODO: partially observed
+            self._system.add_content('intent', ConceptVal('intent',act,confidence))
+
+            for concept in concepts: 
+                if '_confidence' in concept: continue
+                conf = concepts['{}_confidence'.format(concept)]
+                self._system.add_content('concept', ConceptVal(concept, str(concepts[concept]), conf))
+            
+            # if not self._system.is_paused:
+            #     for concept in concepts:
+            #         iuval = IUVal(str(concepts[concept]), concepts['{}_confidence'.format(concept)])
+            #         self._cur_state.add_to_state(Assignment(concept, iuval))
+            #     self._system.update() # update once after everything is in
+
+        ## all other cases, treat the IU's payload as a dictionary and just put everything into the dialogue state
+        state = input_iu.payload
+        update_occured = False
+        assert(type(state)==dict)
+        for key in state:
+            if self._variables is not None and key in self._variables:
+                val = state[key]
+                if isinstance(val, str) and val.isdigit():
+                    val = float(val)
+                if isinstance(val, int):
+                    val = float(val)
+                if key in self._prior_state:
+                    if self._prior_state[key] == val: continue # no need to update
+                print('dm state update {}={}'.format(key, val))
+                self._prior_state[key] = val
+                self._system._cur_state.add_to_state(Assignment(key, val))
+                update_occured = True
+        if update_occured:
+            self._system.update() # update opendial after the full state has been inserted
 
         return None
 
@@ -111,11 +137,15 @@ class OpenDialModule(abstract.AbstractModule, Module):
     def trigger(self, state, update_vars):
         if 'decision' in update_vars and state.has_chance_node('decision'):
             action = str(state.query_prob('decision').get_best())
-            concept_val = state.query_prob('concept').get_best()
-            if isinstance(concept_val, ConceptVal):
-                output_iu = self.create_iu(self._input_iu)
-                output_iu.set_act(action, {concept_val._concept:concept_val._value}, concept_val._confidence)
-                self.append(output_iu)
+            output_iu = self.create_iu(self._input_iu)
+            output_iu.set_act(action, {})
+            self.append(output_iu)
+            # concept_val = state.query_prob('concept').get_best()
+            # if isinstance(concept_val, ConceptVal):
+            #     output_iu = self.create_iu(self._input_iu)
+            #     output_iu.set_act(action, {concept_val._concept:concept_val._value}, concept_val._confidence)
+            #     self.append(output_iu)
+
 
     @dispatch(bool)
     def pause(self, to_pause):
