@@ -7,3 +7,4 @@ keras==2.1.5
 tensorflow-gpu==1.4
 matplotlib
 PIL
+efficientnet

@@ -56,7 +56,6 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
         
         # when new objects are observed (i.e., not SpeechRecognitionIUs)
         if isinstance(input_iu, ObjectFeaturesIU):
-            self.word_buffer = 'red'
             objects = input_iu.payload
             # WAC wants a list of intents (objectIDs) and their corresponding features in a tuple
             intents = objects.keys()
@@ -64,7 +63,9 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
             
             if self.word_buffer is not None:
                 target = self.wac.best_object(self.word_buffer, (intents, features))
-                frame['best_object'] = '{}({})'.format(target[0], target[1])
+                if target is None: return None
+                frame['best_object'] = target[0] 
+                frame['obj_confidence'] = target[1] 
 
         if len(frame) == 0: return None
         output_iu = self.create_iu(input_iu)

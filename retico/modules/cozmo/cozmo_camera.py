@@ -57,14 +57,14 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
     def configure_camera(self):
         self.robot.camera.color_image_enabled = True
         # Lerp exposure between min and max times
-        # min_exposure = self.robot.camera.config.min_exposure_time_ms
-        # max_exposure = self.robot.camera.config.max_exposure_time_ms
-        # exposure_time = (1 - self.exposure_amount) * min_exposure + self.exposure_amount * max_exposure
-        # # Lerp gain
-        # min_gain = self.robot.camera.config.min_gain
-        # max_gain = self.robot.camera.config.max_gain
-        # actual_gain = (1-self.gain_amount)*min_gain + self.gain_amount*max_gain
-        # self.robot.camera.set_manual_exposure(exposure_time, actual_gain)
+        min_exposure = self.robot.camera.config.min_exposure_time_ms
+        max_exposure = self.robot.camera.config.max_exposure_time_ms
+        exposure_time = (1 - self.exposure_amount) * min_exposure + self.exposure_amount * max_exposure
+        # Lerp gain
+        min_gain = self.robot.camera.config.min_gain
+        max_gain = self.robot.camera.config.max_gain
+        actual_gain = (1-self.gain_amount)*min_gain + self.gain_amount*max_gain
+        self.robot.camera.set_manual_exposure(exposure_time, actual_gain)
 
     def setup(self):
 

@@ -102,8 +102,13 @@ class OpenDialModule(abstract.AbstractModule, Module):
                 if isinstance(val, int):
                     val = float(val)
                 if key in self._prior_state:
-                    if self._prior_state[key] == val: continue # no need to update
-                print('dm state update {}={}'.format(key, val))
+                    if self._prior_state[key] == val: # no need to update
+                        # print(self._prior_state)
+                        pass
+                    else:
+                        print('dm state update {}={}'.format(key, val))
+                else:
+                    print('dm state update {}={}'.format(key, val))
                 self._prior_state[key] = val
                 self._system._cur_state.add_to_state(Assignment(key, val))
                 update_occured = True

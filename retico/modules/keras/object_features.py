@@ -79,7 +79,8 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
             {'x1': 9, 'x2': 36, 'y1': 6, 'y2': 45, 'label': 'person'}
 
         '''
-        sub = I[img_box['x1']:img_box['x2'],img_box['y1']:img_box['y2']]
+        # sub = I[img_box['x1']:img_box['x2'],img_box['y1']:img_box['y2']]
+        sub = I
         
         # this can show the sub-image
         # import matplotlib.pyplot as plt

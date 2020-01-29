@@ -80,7 +80,6 @@ class AzureObjectDetectionModule(abstract.AbstractModule):
         self.queue = deque()
 
     def process_iu(self, input_iu):
-
         self.queue.clear() # drop frames, if still waiting
         self.queue.append(input_iu)
 
@@ -90,22 +89,22 @@ class AzureObjectDetectionModule(abstract.AbstractModule):
 
         while True:
             if len(self.queue) == 0:
-                time.sleep(0.1)
+                time.sleep(0.3)
                 continue
             input_iu = self.queue.popleft()
+            print(input_iu)
             image = input_iu.payload
             cv2.imwrite(self.f, cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
             try:
                 with open(self.f, "rb") as image_fd:
                     detected_objects = self.client.detect_objects_in_stream(image_fd)
-                    # print(detected_objects)
+                    print(detected_objects)
                     if len(detected_objects.objects) == 0:
                         return None
                     else:
                         returning_dictionary = {}
                         count = 0
                         for object in detected_objects.objects:
-                            count += 1
                             inner_dict = {}
                             inner_dict['x1'] = object.rectangle.x
                             inner_dict['x2'] = object.rectangle.x + object.rectangle.w
@@ -113,6 +112,7 @@ class AzureObjectDetectionModule(abstract.AbstractModule):
                             inner_dict['y2'] = object.rectangle.y + object.rectangle.h
                             inner_dict['label'] = object.object_property
                             returning_dictionary["object"+str(count)] = inner_dict
+                            count += 1
                         returning_dictionary['num_objs'] = len(returning_dictionary)
                         output_iu = self.create_iu(input_iu)
                         output_iu.set_detected_objects(image, returning_dictionary)

@@ -116,3 +116,34 @@ class DialogueDecisionIU(abstract.IncrementalUnit):
             self.concepts = concepts
         self.confidence = confidence
         self.payload = {'decision':decision, 'concepts':concepts}
+
+
+
+class GenericDictIU(abstract.IncrementalUnit):
+    """A Generic IU type that holds dictionaries
+
+    - dictionaries can be turned into JSON for interop
+    - dictionary can be added to a dialogue state
+
+    """
+
+    @staticmethod
+    def type():
+        return "Generic Dictionary IU"
+
+    def __init__(self, creator=None, iuid=0, previous_iu=None, grounded_in=None,
+                 payload=None, **kwargs):
+        """Initialize the GenericDictIU with a payload
+
+        Args:
+        """
+        super().__init__(creator=creator, iuid=iuid, previous_iu=previous_iu,
+                         grounded_in=grounded_in)
+
+    def set_payload(self, payload):
+        """Set the dictionary payload
+
+        Args:
+            payload(dict)
+        """
+        self.payload = payload

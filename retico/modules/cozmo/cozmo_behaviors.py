@@ -16,8 +16,6 @@ class CozmoBehaviors():
     def __init__(self, robot, max_x=320, max_y=240):
         self.robot = robot
         self.objects = None
-        self.robot.set_head_angle(cozmo.robot.MIN_HEAD_ANGLE).wait_for_completed()
-        self.robot.set_robot_volume(0.75)
         self.robot.move_lift(5)
         self.pivot_wheel = [25,-25, 40,-40]
         self.turn_wheel = [30, 40, 50, -30, -40, -15]
@@ -25,11 +23,17 @@ class CozmoBehaviors():
         self.top_object = None
         self.max_x = max_x
         self.max_y = max_y
+        self.start_position()
+
+    def start_position(self):
+        self.robot.set_head_angle(degrees(-25)).wait_for_completed() # don't look too far down or up
+        self.robot.set_robot_volume(0.25)
+        self.robot.move_lift(5)
 
     def set_current_objects(self, objects):
         self.objects = objects
         if len(self.objects) > 0:
-            self.top_object = objects['object1']
+            self.top_object = objects['object0']
             # self.robot.stop_all_motors()
         else:
             self.top_object = None
@@ -38,12 +42,35 @@ class CozmoBehaviors():
         return self.top_object is not None
 
     def say(self, text='hello'):
-        self.robot.say_text(text)
+        self.robot.say_text(text).wait_for_completed()
+
+    def camera_on(self):
+        self.robot.camera.image_stream_enabled = True
+        self.robot.camera.color_image_enabled = True
+
+    def camera_off(self):
+        self.robot.camera.image_stream_enabled = False
+
+
+    def back_up(self):
+        self.camera_off()
+        robot = self.robot
+        turn_choices = [120, -120]
+        drive_choices = [-25, -100, -50]
+        random_turn = random.choice(turn_choices)
+        random_drive = random.choice(drive_choices)  
+        print("back up: ", random_drive, "... and turn: ", random_turn)
+        robot.drive_straight(distance_mm(random_drive), speed=speed_mmps(30), should_play_anim=False, in_parallel=True)
+        robot.wait_for_all_actions_completed()
+        robot.turn_in_place(degrees(random_turn), speed=Angle(5), in_parallel=True)
+        robot.wait_for_all_actions_completed()
+        self.camera_on()
 
     def indicate_object(self, num_taps=1):
         '''
         When the robot is near an object, tap to indicate it
         '''
+        self.camera_off()
         robot = self.robot
         # Move lift down and tilt the head up
         robot.set_head_angle(cozmo.robot.MIN_HEAD_ANGLE).wait_for_completed()
@@ -52,8 +79,10 @@ class CozmoBehaviors():
         for i in range(num_taps):
             robot.set_lift_height(0.3, accel=100.0, max_speed=100.0).wait_for_completed()
             robot.set_lift_height(0.0, accel=100.0, max_speed=100.0).wait_for_completed()
+        self.camera_on()
 
     def explore(self):
+        self.camera_off()
         robot = self.robot
         if random.choice([True,False]):
             l_speed = random.choice(self.pivot_wheel)
@@ -63,6 +92,7 @@ class CozmoBehaviors():
             # r_speed = random.choice(self.pivot_wheel)
         dur = random.choice(self.durations)
         robot.drive_wheels(l_wheel_speed=l_speed, r_wheel_speed=-l_speed, duration=dur)
+        self.camera_on()
 
     def find_follow_face(self):
         '''
@@ -104,10 +134,10 @@ class CozmoBehaviors():
             time.sleep(.1)
 
     def object_check(self, go_box):
-        xmin = go_box['x1'] / self.max_x # scale to 0-1
-        xmax = go_box['x2'] / self.max_x # scale to 0-1
-        ymin = go_box['y1'] / self.max_y # scale to 0-1
-        ymax = go_box['y2'] / self.max_y # scale to 0-1
+        xmin = go_box['x1'] #/ self.max_x # scale to 0-1
+        xmax = go_box['x2'] #/ self.max_x # scale to 0-1
+        ymin = go_box['y1'] #/ self.max_y # scale to 0-1
+        ymax = go_box['y2'] #/ self.max_y # scale to 0-1
         height = ymax - ymin
         width = xmax - xmin
         height = height 
@@ -137,24 +167,29 @@ class CozmoBehaviors():
             if y_center > 0.48 or y_center < 0.36:
                 y_diff = y_center - 0.42
                 base = y_diff * (-10)
-                drive_dist = (np.power(base,4)) * 25
+                drive_dist = (np.power(base,4)) / 2
             else: drive_dist = 0 
         return real_obj[0], drive_dist, turn_angle   
 
     def turn_toward_top_object(self):
         # while True:
+        self.camera_off()
         real_object, drive_dist, turn_angle = self.find_coordinates(self.top_object)
         print(real_object, ' turn: ', turn_angle, ' drive: ', drive_dist)
-        if real_object:
-            self.robot.turn_in_place(degrees(turn_angle)).wait_for_completed()
+        #if real_object:
+        self.robot.turn_in_place(degrees(turn_angle)).wait_for_completed()
+        self.camera_on()
 
     def go_to_top_object(self):
+        self.camera_off()
         real_object, drive_dist, turn_angle = self.find_coordinates(self.top_object)
         if real_object:
             self.robot.drive_straight(distance_mm(drive_dist), 
                                 speed_mmps(40), 
                                 should_play_anim=False, 
                                 in_parallel=True).wait_for_completed()
+        self.camera_on()
+        return drive_dist
 
 def test(robot : cozmo.robot.Robot):
     coz = CozmoBehaviors(robot)
