@@ -3,6 +3,7 @@ flexx~=0.4.2
 python-socketio[client]
 opencv-python
 azure-cognitiveservices-vision-computervision
+azure-cognitiveservices-vision-face
 keras==2.1.5
 tensorflow-gpu==1.4
 matplotlib
