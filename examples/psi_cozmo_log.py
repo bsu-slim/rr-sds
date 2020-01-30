@@ -4,10 +4,14 @@ import time
 # set vars before importing modules
 import os
 import sys
+
+
 os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-ca5bdacf1d9a.json'
 os.environ['PYOD'] = '/home/casey/git/PyOpenDial'
 os.environ['RASA'] = "/home/casey/git/rasa_nlu"
 os.environ['COZMO'] = "/home/casey/git/cozmo-python-sdk/src"
+os.environ['TF_RESEARCH'] = '/home/casey/git/tfmodels/research'
+os.environ['TF_SLIM'] = '/home/casey/git/tfmodels/research/slim'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # error level
 import warnings
 warnings.filterwarnings('ignore')
@@ -30,7 +34,8 @@ from retico.modules.cozmo.cozmo_state import CozmoStateModule
 from retico.modules.cozmo.cozmo_camera import CozmoCameraModule
 from retico.modules.keras.object_features import KerasObjectFeatureExtractorModule
 from retico.core.audio.io import RespeakerMicrophoneModule
-from retico.modules.azure.object_detection import AzureObjectDetectionModule
+# from retico.modules.azure.object_detection import AzureObjectDetectionModule
+from retico.modules.google.od import MaskrRCNNObjectDetection
 from retico.interop.zeromq.io import ZeroMQWriter
 from retico.interop.zeromq.io import WriterSingleton
 from retico.modules.slim.words_as_classifiers import WordsAsClassifiersModule
@@ -38,19 +43,22 @@ from retico.modules.slim.words_as_classifiers import WordsAsClassifiersModule
 # had to change is_running to _is_running because opendial modules have an is_running() method
 
 def init_all(robot : cozmo.robot.Robot):
-
-    model_dir = '/home/casey/git/retico/data/cozmo/nlu/models/nlu_20191231-234236' # incr nlu pipeline
+    
     domain_dir = '/home/casey/git/retico/data/cozmo/dm/dialogue.xml'
     aod_endpoint = "https://slimcomputervision.cognitiveservices.azure.com/"
     aod_key = "59bfd2dc248a4d08957edf7a6eb6331f"
     wac_dir = '/home/casey/git/retico/data/wac/subset'
+    mask_rcnn_labels = '/home/casey/git/retico/data/maskrcnn/label_map.pbtxt'
+    mask_rcnn_model = '/home/casey/git/retico/data/maskrcnn/frozen_inference_graph.pb'
 
-    opendial_variables = ['face_count', # from CozmoStateModule
-                           'num_objs', # frmo AzureObjectDetectionModule
-                           'near_object',
-                           'exploring',
+    opendial_variables = ['face_count', # CozmoStateModule
+                           'num_objs', # ObjectDetector
+                           'near_object', # CozmoRefer
+                           'exploring', # CozmoRefer
+                           'aligned', # CozmoRefer
                            'word_to_find', # WordsAsClassifiersModule
-                           'best_object'] # WordsAsClassifiersModule
+                           'best_object', # WordsAsClassifiersModule
+                           'obj_confidence'] # WordsAsClassifiersModule
 
     #
     # INSTANTIATE MODULES
@@ -64,7 +72,8 @@ def init_all(robot : cozmo.robot.Robot):
     cozmo_refer = CozmoReferModule(robot)
     cozmo_camera = CozmoCameraModule(robot)
     cozmo_state = CozmoStateModule(robot)
-    object_detector = AzureObjectDetectionModule(aod_key, aod_endpoint)
+    # object_detector = AzureObjectDetectionModule(aod_key, aod_endpoint)
+    object_detector = MaskrRCNNObjectDetection(mask_rcnn_labels, mask_rcnn_model)
     feature_extractor = KerasObjectFeatureExtractorModule()
     wac = WordsAsClassifiersModule(wac_dir=wac_dir)
     debug = DebugModule()
@@ -86,6 +95,7 @@ def init_all(robot : cozmo.robot.Robot):
     cozmo_state.subscribe(dm)
     object_detector.subscribe(dm)
     object_detector.subscribe(cozmo_refer)
+    cozmo_refer.subscribe(dm)
 
     # robot camera as input
     cozmo_camera.subscribe(object_detector)
