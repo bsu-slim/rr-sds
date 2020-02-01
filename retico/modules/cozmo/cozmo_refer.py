@@ -4,6 +4,7 @@ import time
 import asyncio
 import sys
 from collections import deque
+import random
 
 # retico
 from retico.core import abstract
@@ -72,43 +73,58 @@ class CozmoReferModule(abstract.AbstractModule):
             confidence = float(command[command.find(':')+1:])
             command = command[:command.find(':')]
 
-        print('running command:', command)
-        # while self.robot.is_moving:
-        #     self.robot.stop_all_motors()
-        if 'begin_explore' == command:
-            self.update_dialogue_state('exploring', True)
-            self.cb.explore()
-        if 'align_to_object' == command:
-            for _ in range(3):
+        self._last_command = command
+        self._input_iu = input_iu
+
+        try:
+
+            print('running command:', command)
+            self.cb.camera_on()
+            time.sleep(0.2)
+            self.cb.camera_off()
+            # while self.robot.is_moving:
+            #     self.robot.stop_all_motors()
+            if 'begin_explore' == command:
+                self.update_dialogue_state('exploring', True)
+                self.cb.explore()
+            if 'align_to_object' == command:
+                for _ in range(3):
+                    self.cb.turn_toward_top_object()
+                self.update_dialogue_state('aligned', True)
+            if 'approach_object' == command:
                 self.cb.turn_toward_top_object()
-            self.update_dialogue_state('aligned', True)
-        if 'approach_object' == command:
-            self.cb.turn_toward_top_object()
-            drive_dist = self.cb.go_to_top_object()
-            if drive_dist < 5:
-                print('NEAR OBJECT')
-                self.update_dialogue_state('near_object', True)
-        if 'check_confidence' == command:
-            print(self._current_word, confidence)
-            if confidence > 0.7:
-                self.cb.say(self._current_word)
-                self.cb.indicate_object()
-            else:
-                self.cb.say("hmm not {}".format(self._current_word))
+                drive_dist = self.cb.go_to_top_object()
+                if drive_dist < 5:
+                    print('NEAR OBJECT')
+                    self.update_dialogue_state('near_object', True)
+            if 'check_confidence' == command:
+                print(self._current_word, confidence)
 
-            self.update_dialogue_state('aligned', False)
-            self.update_dialogue_state('near_object', False)
-            self.update_dialogue_state('exploring', False) 
-            self.cb.start_position()
-            self.cb.back_up()
+                self.update_dialogue_state('aligned', False)
+                self.update_dialogue_state('near_object', False)
 
+                if confidence > 0.6:
+                    self.cb.say(self._current_word)
+                    self.cb.indicate_object()
+                    self.update_dialogue_state('word_to_find', None)
+                    self.update_dialogue_state('exploring', False)
+                else:
+                    self.cb.start_position()
+                    w = random.choice(['hmmm', 'uhh', 'that'])
+                    self.cb.say("{} not {}".format(w, self._current_word))
+                    self.cb.back_up()
+                    self._last_command = 'begin_explore'
+
+        except cozmo.exceptions.RobotBusy:
+            print('robot is busy')
+            
 
         # output_iu = self.create_iu(self._input_iu)
         # output_iu.set_payload({'':0})
         # self.append(output_iu)
 
-        self._last_command = command
-        self._input_iu = input_iu
+
+
 
     def run_dispatcher(self):
 

@@ -36,7 +36,7 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
     def output_iu():
         return ImageIU
 
-    def __init__(self, robot, exposure=0.1, gain=1.0, **kwargs):
+    def __init__(self, robot, exposure=0.05, gain=0.8, **kwargs):
         super().__init__(**kwargs)
         self.robot = robot
         self.robot.move_lift(5)
@@ -47,7 +47,7 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
     def process_iu(self, input_iu):
         if len(self.img_queue) > 0:
             img = self.img_queue.popleft()
-            img = np.array(img)
+            # img = np.array(img)
             output_iu = self.create_iu(input_iu)
             output_iu.set_image(img, 1, 1)
             return output_iu
@@ -69,8 +69,8 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
     def setup(self):
 
         def handle_image(evt, obj=None, tap_count=None,  **kwargs):
-            self.img_queue.clear()
-            self.img_queue.append(evt.image)
+            if len(self.img_queue) == 0:
+                self.img_queue.append(evt.image)
 
         self.configure_camera()
         self.robot.add_event_handler(cozmo.camera.EvtNewRawCameraImage, handle_image)

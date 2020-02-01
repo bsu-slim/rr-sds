@@ -90,10 +90,9 @@ class AzureEmotionDetectionModule(abstract.AbstractModule):
     def run_detector(self):
         while True:
             if len(self.queue) == 0:
-                time.sleep(0.3)
+                time.sleep(0.5)
                 continue
             input_iu = self.queue.popleft()
-            
             image = input_iu.payload
             cv2.imwrite(self.f, image)
             # Creating an image stream given an input image file.
@@ -131,7 +130,7 @@ class AzureEmotionDetectionModule(abstract.AbstractModule):
             output_iu = self.create_iu(input_iu)
             output_iu.set_payload(returning_dictionary)
             self.append(output_iu)
-            time.sleep(2)
+            time.sleep(5)
 
     def setup(self):
         self.authenticate()

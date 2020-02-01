@@ -6,6 +6,7 @@ from retico.core import abstract
 from retico.core.visual.common import ImageIU
 import numpy as np
 import cv2
+from PIL import Image
 
 
 class WebcamModule(abstract.AbstractProducingModule):
@@ -50,6 +51,8 @@ class WebcamModule(abstract.AbstractProducingModule):
         if ret:
             output_iu = self.create_iu()
             # output_iu.set_image(frame, self.width, self.height, self.rate)
+            frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+            frame = Image.fromarray(frame)
             output_iu.set_image(frame, 1, self.rate)
             return output_iu
         else:
@@ -67,7 +70,7 @@ class WebcamModule(abstract.AbstractProducingModule):
         else:
             self.height = int(cap.get(4))
         if self.rate != None:
-            cap.set(5, rate)
+            cap.set(5, self.rate)
         else:
             self.rate = int(cap.get(5))
 

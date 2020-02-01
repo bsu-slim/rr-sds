@@ -16,7 +16,9 @@ import tensorflow as tf
 
 # other
 import numpy as np
+from matplotlib import pyplot as plt
 from PIL import Image as PImage
+import cv2
 
 
 class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
@@ -41,9 +43,9 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
     def output_iu():
         return ObjectFeaturesIU
 
-    def __init__(self, model_type='efficientnet', layer='probs', weights='imagenet', **kwargs):
+    def __init__(self, model_type='vgg19', layer='fc2', weights='imagenet', img_dims=(320,240), **kwargs):
         """Initializes the object feature detector module
-
+        efficientnet/probs
         Args:
 
         """
@@ -52,6 +54,7 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         self.layer = layer
         self.session = tf.Session(graph=tf.Graph())
         self.pre_input = None
+        self.img_dims = img_dims
         with self.session.graph.as_default():
             set_session(self.session)
 
@@ -63,40 +66,42 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
                 self.xs,self.ys=224,224
 
             if model_type == 'inveptionv3':
-                from keras.applications.inception_v3 import InceptionV3, preprocess_input
+                from keras.applications.inception_v3 import InceptionV3
+                from keras.applications.inception_v3 import preprocess_input
                 base_model = InceptionV3(weights=self.weights,include_top=True)
                 self.pre_input = preprocess_input
                 self.xs,self.ys=299,299
+
+            if model_type == 'vgg19':
+                from keras.applications.vgg19 import VGG19
+                from keras.applications.vgg19 import preprocess_input
+                base_model = VGG19(weights=self.weights,include_top=True)
+                self.pre_input = preprocess_input
+                self.xs,self.ys=224,224
                 
             # allow for other output layers
+            print(base_model.summary())
             self.model = Model(inputs=base_model.input, outputs=base_model.get_layer(self.layer).output)
         print('Feature extractor module setup complete.')
 
+    # def load_image_into_numpy_array(self, image):
+    #     (im_width, im_height) = image.size
+    #     return np.array(image.getdata()).reshape(
+    #         (im_height, im_width, 3)).astype(np.uint8)
+
     def get_bounded_subimage(self, I, img_box):
         '''
-        I (image)
-        img_box (dict): which is a dictionary with bounding box info in the format:
-            {'x1': 9, 'x2': 36, 'y1': 6, 'y2': 45, 'label': 'person'}
-
         '''
-        # sub = I[img_box['x1']:img_box['x2'],img_box['y1']:img_box['y2']]
-        sub = I
-        
-        # this can show the sub-image
-        # import matplotlib.pyplot as plt
-        # plt.figure()
-        # ax = plt.gca()
-        # ax.imshow(sub)
-        # plt.show()
-        
-        if len(sub) == 0: return None
-        pim = PImage.fromarray(sub)
-        pim2 = pim.resize((self.xs,self.ys), PImage.ANTIALIAS)
-        #img = np.array(pim2, dtype=np.float32)
-        img = image.img_to_array(pim2)
+        xmin = int(img_box['xmin']*self.img_dims[0])
+        xmax = int(img_box['xmax']*self.img_dims[0])
+        ymin = int(img_box['ymin']*self.img_dims[1])
+        ymax = int(img_box['ymax']*self.img_dims[1])
+        sub = I.crop([xmin,ymin,xmax,ymax])
+        sub.load()
+        sub = sub.resize((self.xs,self.ys), PImage.ANTIALIAS)
+        sub.show()
+        img = image.img_to_array(sub)
         img = np.expand_dims(img, axis=0)
-        #if len(img.shape) < 3: return None
-        #img = img.reshape((1, img.shape[0], img.shape[1], img.shape[2]))
         return img
 
     def get_img_features(self, img):

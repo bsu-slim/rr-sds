@@ -106,10 +106,10 @@ class AzureObjectDetectionModule(abstract.AbstractModule):
                         count = 0
                         for object in detected_objects.objects:
                             inner_dict = {}
-                            inner_dict['x1'] = object.rectangle.x
-                            inner_dict['x2'] = object.rectangle.x + object.rectangle.w
-                            inner_dict['y1'] = object.rectangle.y
-                            inner_dict['y2'] = object.rectangle.y + object.rectangle.h
+                            inner_dict['xmin'] = object.rectangle.x
+                            inner_dict['xmax'] = object.rectangle.x + object.rectangle.w
+                            inner_dict['ymin'] = object.rectangle.y
+                            inner_dict['ymax'] = object.rectangle.y + object.rectangle.h
                             inner_dict['label'] = object.object_property
                             returning_dictionary["object"+str(count)] = inner_dict
                             count += 1
