@@ -14,11 +14,12 @@ import base64
     # width (integer) - The width of the image in pixels.
 def takePicture(ip, width=320, height=427):
     
-    resp = requests.get('http://'+ip+'/api/cameras/rgb?base64=true&displayOnScreen=false&overwriteExisting=false&width='+str(width)+'&height='+str(height))
+    resp = requests.get('http://'+ip+'/api/cameras/rgb?base64=true&width='+str(width)+'&height='+str(height))
     resp = resp.json()
     return (resp['result'])
 
 ip = "10.10.0.7"
 result = takePicture(ip)
 im = Image.open(BytesIO(base64.b64decode(result.get('base64'))))
-im.save("mistypic","JPEG")
+im.save("mistypic.jpg","JPEG")
+print('image saved as mistypic.jpeg')
