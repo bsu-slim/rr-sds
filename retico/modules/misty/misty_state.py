@@ -58,10 +58,13 @@ class MistyStateModule(abstract.AbstractProducingModule):
     def output_iu():
         return RobotStateIU
 
-    def __init__(self, ip, **kwargs):
+    def __init__(self, ip, subscribe_self=True,subscribe_tof=True,subscribe_world=True **kwargs):
         super().__init__(**kwargs)
         self.ip = ip
         self.state_queue = deque()
+        self.sub_world = subscribe_world
+        self.sub_tof = subscribe_tof
+        self.sub_self = subscribe_self
         
 
     def process_iu(self, input_iu):
@@ -83,14 +86,14 @@ class MistyStateModule(abstract.AbstractProducingModule):
             print(error)
 
         def on_close(ws):
-            print("### closed ###")
+            print("### misty socket closed ###")
 
         def on_open(ws):
-            ws.send(json.dumps(subscribe_ss))
-            ws.send(json.dumps(subscribe_tof))
-            ws.send(json.dumps(subscribe_ws)) 
+            if self.sub_self: ws.send(json.dumps(subscribe_ss))
+            if self.sub_tof: ws.send(json.dumps(subscribe_tof))
+            if self.sub_world: ws.send(json.dumps(subscribe_ws)) 
 
-        websocket.enableTrace(True)
+        # websocket.enableTrace(True)
         ws = websocket.WebSocketApp("ws://{}pubsub".format(self.ip),
                                 on_message = on_message,
                                 on_error = on_error,
