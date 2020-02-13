@@ -39,6 +39,7 @@ from retico.modules.google.od import MaskrRCNNObjectDetection
 from retico.interop.zeromq.io import ZeroMQWriter
 from retico.interop.zeromq.io import WriterSingleton
 from retico.modules.slim.words_as_classifiers import WordsAsClassifiersModule
+from retico.core.visual.io import WebcamModule
 
 # had to change is_running to _is_running because opendial modules have an is_running() method
 
@@ -65,12 +66,14 @@ def init_all(robot : cozmo.robot.Robot):
     #
     # mic = RespeakerMicrophoneModule('192.168.20.49:8000')
     # asr = GoogleASRModule(rate=16000)
+    
     mic = MicrophoneModule(1000)
     asr = GoogleASRModule()
     iasr = IncrementalizeASRModule()
     dm = OpenDialModule(domain_dir=domain_dir, variables=opendial_variables)
     cozmo_refer = CozmoReferModule(robot)
     cozmo_camera = CozmoCameraModule(robot)
+    # cozmo_camera = WebcamModule()
     cozmo_state = CozmoStateModule(robot)
     # object_detector = AzureObjectDetectionModule(aod_key, aod_endpoint)
     object_detector = MaskrRCNNObjectDetection(mask_rcnn_labels, mask_rcnn_model)
@@ -79,8 +82,9 @@ def init_all(robot : cozmo.robot.Robot):
     debug = DebugModule()
 
     # psi related modules
-    # WriterSingleton(ip='192.168.20.143', port='12346') # create the zeromq writer
-    # iasr_psi = ZeroMQWriter(topic='asr')
+    # WriterSingleton should use the *source* ip address (i.e., this machine's)
+    WriterSingleton(ip='10.255.146.186', port='12346') # create the zeromq writer
+    iasr_psi = ZeroMQWriter(topic='asr')
     # nlu_psi = ZeroMQWriter(topic='nlu')
     # dm_psi = ZeroMQWriter(topic='dm')
    
@@ -102,7 +106,7 @@ def init_all(robot : cozmo.robot.Robot):
     object_detector.subscribe(feature_extractor)
     feature_extractor.subscribe(wac)
 
-    # iasr.subscribe(iasr_psi)
+    iasr.subscribe(iasr_psi)
     # nlu.subscribe(nlu_psi)
     # dm.subscribe(dm_psi)
     # feat_ext.subscribe(feat_ext_psi)
@@ -125,7 +129,7 @@ def init_all(robot : cozmo.robot.Robot):
 
     # dm_psi.run()
     # nlu_psi.run()
-    # iasr_psi.run()
+    iasr_psi.run()
 
     input() # keep everything running
 
@@ -141,7 +145,7 @@ def init_all(robot : cozmo.robot.Robot):
     wac.stop()
 
     # dm_psi.stop()
-    # iasr_psi.stop()
+    iasr_psi.stop()
     # nlu_psi.stop()
 
 cozmo.run_program(init_all, use_viewer=True, force_viewer_on_top=False)

@@ -13,7 +13,7 @@ import sys
 import os
 from retico.modules.misty.mistyPy import Robot
 
-class MistyAction(abstract.AbstractModule):
+class MistyActionModule(abstract.AbstractModule):
 
     @staticmethod
     def name():

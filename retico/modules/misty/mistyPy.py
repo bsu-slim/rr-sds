@@ -44,10 +44,16 @@ class Robot:
         else:
             print(file_name,"not found on the robot, use <robot_name>.printAudioList() to see the list of saved audio files")
 
+    def takePicture(self):
+        resp = requests.get('http://{}/api/cameras/rgb?Base64=true'.format(self.ip))
+        resp = resp.json()
+        reply = resp['result']
+        print(reply)
+
     def battery(self):
         resp = requests.get('http://{}/api/battery'.format(self.ip))
         resp = resp.json()
-        return (resp['result'])
+        return resp['result']
 
     def moveArm(self,arm,position,velocity=50):
         assert position in range(-91,91), " moveArm: position needs to be -90 to 90"
@@ -363,3 +369,8 @@ class Socket:
                 "Message": ""}
         
         return unsubscribeMsg
+
+if __name__ == '__main__':
+    robot = Robot('10.10.0.7')
+    robot.takePicture()
+    robot.takePicture()
