@@ -1,11 +1,14 @@
 pyaudio~=0.2.11
-flexx~=0.4.2
+flexx
 python-socketio[client]
 opencv-python
 azure-cognitiveservices-vision-computervision
 azure-cognitiveservices-vision-face
-keras==2.1.5
-tensorflow-gpu==1.4
+keras==2.3.1
+tensorflow-gpu==1.14
 matplotlib
 pillow
 efficientnet
+google-cloud-speech
+cssutils
+scikit-learn==0.22.1

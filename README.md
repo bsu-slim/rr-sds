@@ -24,6 +24,9 @@ Generally you need the following for running ReTiCo:
 
  - `google-cloud-speech`
  - `rasa-nlu`
+ - `incremental-rasa-nlu`
+ - `pyopendial`
+
 
 #### Portaudio
 
@@ -88,6 +91,53 @@ For installing Rasa NLU, just install it via:
 ```
 $ pip install rasa_nlu
 ```
+
+### Incremental Rasa NLU
+
+If you want to use an incremental version of Rasa NLU, use
+
+```
+git clone https://bitbucket.org/bsu-slim/incremental-rasa-nlu
+```
+
+Then open the incremental-rasa-nlu folder and run `pip install -r requirements.txt`
+
+Finally, set the `RASA` environment variable to the incremental-rasa-nlu folder.
+
+### PyOpenDial
+
+For Installing PyOpenDial, use
+
+```
+git clone https://bitbucket.org/bsu-slim/pyopendial
+```
+
+Then open the pyopendial folder and run `pip install -r requirements.txt`
+
+Finally, set the `PYOD` environment variable to the pyopendial folder. 
+
+### Object Detection 
+
+For using the google object detection module, you'll need to follow the instructions here:
+
+```
+https://github.com/tensorflow/models/tree/master/research/object_detection
+```
+
+You will then need to set the TF_RESEARCH environment variable to the models/research folder, 
+and the TF_SLIM environment variable to the models/research/slim folder. 
+
+### Cozmo Robot
+
+If you want to use Cozmo, follow the installation instructions found on the [Anki Cozmo Website](https://developer.anki.com/blog/learn/tutorial/getting-started-with-the-cozmo-sdk/index.html).
+
+However, you'll need to use our cozmo sdk fork:
+
+```
+https://bitbucket.org/bsu-slim/cozmo-python-sdk
+```
+
+Then you'll need to set the COZMO environment variable to your cozmo-python-sdk/src folder.
 
 ## Installing Retico
 
