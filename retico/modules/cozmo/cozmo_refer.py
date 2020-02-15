@@ -55,7 +55,7 @@ class CozmoReferModule(abstract.AbstractModule):
 
     def update_dialogue_state(self, signal, value):
         output_iu = GenericDictIU(creator=self, iuid=self.iu_counter)
-        self.iu_counter+=1
+        self.iu_counter+=1 # inherited
         output_iu.set_payload({signal:value})
         self.append(output_iu)
 

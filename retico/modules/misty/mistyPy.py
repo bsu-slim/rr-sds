@@ -7,7 +7,7 @@ try:
     import thread
 except ImportError:
     import _thread as thread
-from random import*
+from random import *
 
 class Robot:
 
@@ -28,23 +28,23 @@ class Robot:
         #self.populateAudio()
         #self.populateLearnedFaces()
 
-    def changeLED(self,red,green,blue):
+    def change_LED(self,red,green,blue):
         assert red in range(0,256) and blue in range(0,256) and green in range(0,256), " changeLED: The colors need to be in 0-255 range"
         requests.post('http://'+self.ip+'/api/led',json={"red": red,"green": green,"blue": blue})
 
-    def changeImage(self,image_name,timeout=5):
+    def change_image(self,image_name,timeout=5):
         if image_name in self.images_saved:
             requests.post('http://{}/api/images/display'.format(self.ip),json={'FileName': image_name ,'TimeOutSeconds': 5,'Alpha': 1})
         else:
             print(image_name,"not found on the robot, use <robot_name>.printImageList() to see the list of saved images")
 
-    def playAudio(self,file_name):
+    def play_audio(self,file_name):
         if file_name in self.audio_saved:
             requests.post('http://'+self.ip+'/api/audio/play',json={"AssetId": file_name})
         else:
             print(file_name,"not found on the robot, use <robot_name>.printAudioList() to see the list of saved audio files")
 
-    def takePicture(self):
+    def take_picture(self):
         resp = requests.get('http://{}/api/cameras/rgb?Base64=true'.format(self.ip))
         resp = resp.json()
         reply = resp['result']
@@ -55,12 +55,12 @@ class Robot:
         resp = resp.json()
         return resp['result']
 
-    def moveArm(self,arm,position,velocity=50):
+    def move_arm(self,arm,position,velocity=50):
         assert position in range(-91,91), " moveArm: position needs to be -90 to 90"
         assert velocity in range(0,101), " moveArm: Velocity needs to be in range 0 to 100"
         requests.post('http://'+self.ip+'/api/arms',json={"Arm": arm, "Position":position, "Velocity": velocity})
 
-    def moveHead(self,roll,pitch,yaw,velocity=1):
+    def move_head(self,roll,pitch,yaw,velocity=1):
         assert roll in range(-54,46) and pitch in range(-45,46) and yaw in range(-45,46), " moveHead: Roll, Pitch and Yaw needs to be in range -45 to +45"
         assert velocity in range(0,101), " moveHead: Velocity needs to be in range 0 to 100"
         requests.post('http://'+self.ip+'/api/head',json={"Pitch": pitch, "Roll": roll, "Yaw": yaw, "Velocity": velocity})
@@ -69,74 +69,74 @@ class Robot:
         assert linear_velocity in range(-100,101) and angular_velocity in range(-100,101), " drive: The velocities needs to be in the range -100 to 100"
         requests.post('http://'+self.ip+'/api/drive',json={"LinearVelocity": linear_velocity,"AngularVelocity": angular_velocity})
 
-    def driveTime(self,linear_velocity, angular_velocity,time_in_milli_second):
+    def drive_time(self,linear_velocity, angular_velocity,time_in_milli_second):
         assert linear_velocity in range(-100,101) and angular_velocity in range(-100,101), " driveTime: The velocities needs to be in the range -100 to 100"
         assert isinstance(time_in_milli_second, int) or isinstance(time_in_milli_second, float), " driveTime: Time should be an integer or float and the unit is milli seconds"
         requests.post('http://'+self.ip+'/api/drive/time',json={"LinearVelocity": linear_velocity,"AngularVelocity": angular_velocity, "TimeMS": time_in_milli_second})
 
-    def driveTrack(self,left_track_speed,right_track_speed):
+    def drive_track(self,left_track_speed,right_track_speed):
         assert left_track_speed in range(-100,101) and right_track_speed in range(-100,101), " driveTrack: The velocities needs to be in the range -100 to 100"
         requests.post('http://'+self.ip+'/api/drive/track',json={"LeftTrackSpeed": left_track_speed,"RightTrackSpeed": right_track_speed})
     
     def stop(self):
         requests.post('http://'+self.ip+'/api/drive/stop')
         
-    def sendBackpack(self,message):
+    def send_backpack(self,message):
         assert isinstance(message, str), " sendBackpack: Message sent to the Backpack should be a string"
         requests.post('http://'+self.ip+'/api/serial',json={"Message": message})
 
-    def populateImages(self):
+    def populate_images(self):
         self.images_saved = []
         resp = requests.get('http://{}/api/images/list'.format(self.ip))
         resp = resp.json()
         for reply in resp['result']:
             self.images_saved.append(reply["name"])
 
-    def populateAudio(self):
+    def populate_audio(self):
         self.audio_saved = []
         resp = requests.get('http://{}/api/audio/list'.format(self.ip))
         resp = resp.json()
         for out in resp["result"]:
                 self.audio_saved.append(out["name"])
 
-    def populateLearnedFaces(self):
+    def populate_learned_faces(self):
         self.faces_saved = []
         resp = requests.get('http://{}/api/faces'.format(self.ip))
         resp = resp.json()
         self.faces_saved = resp["result"]
 
-    def printImageList(self):
+    def print_image_list(self):
         print(self.images_saved)
     
-    def getImageList(self):
+    def get_image_list(self):
         return self.images_saved
 
-    def printAudioList(self):
+    def print_audio_list(self):
         print(self.audio_saved)
     
-    def getAudioList(self):
+    def get_audio_list(self):
         return self.audio_saved
     
-    def printSubscriptionList(self):
+    def print_subscription_list(self):
         print(self.available_subscriptions)
 
-    def startFaceRecognition(self):
+    def start_face_recognition(self):
         requests.post('http://'+self.ip+'/api/faces/recognition/start')
     
-    def stopFaceRecognition(self):
+    def stop_face_recognition(self):
         requests.post('http://'+self.ip+'/api/faces/recognition/stop')
 
-    def printLearnedFaces(self):
+    def print_learned_laces(self):
         print(self.faces_saved)
 
-    def getLearnedFaces(self):
+    def get_learned_faces(self):
         return self.faces_saved
 
-    def clearLearnedFaces(self):
+    def clear_learned_faces(self):
         requests.delete('http://'+self.ip+'/api/faces')
         self.faces_saved = []
     
-    def learnFace(self,name):
+    def learn_face(self,name):
         assert isinstance(name, str), " trainFace: name must be a string"
         requests.post('http://'+self.ip+'/api/faces/training/start',json={"FaceId": name})
         print("Please look at Misty's face for 15 seconds..")
@@ -182,7 +182,7 @@ class Robot:
         else:
             return " TimeOfFlight not subscribed, use the command robot_name.subscribe(\"TimeOfFlight\")"
 
-    def faceRec(self):
+    def face_rec(self):
         data = json.loads(self.face_recognition_instance.data)
         try:
             out = "{ \"personName\" : \"" + data["message"]["personName"] + "\", \"distance\" : \"" + str(data["message"]["distance"]) + "\", \"elevation\" :\"" + str(data["message"]["elevation"]) + "\"}"

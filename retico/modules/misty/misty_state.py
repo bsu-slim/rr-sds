@@ -17,30 +17,10 @@ except ImportError:
 # retico
 from retico.core import abstract
 from retico.core.robot.common import RobotStateIU
+from retico.core.dialogue.common import DialogueDecisionIU
 
 
 class MistyStateModule(abstract.AbstractProducingModule):
-
-    subscribe_tof = {
-    "Operation": "subscribe",
-    "Type": "TimeOfFlight",
-    "DebounceMs": 100,
-        "EventName": "TimeOfFlight",
-    }
-
-    subscribe_ss = {
-    "Operation": "subscribe",
-    "Type": "SelfState",
-    "DebounceMs": 100,
-        "EventName": "SelfState",
-    }
-
-    subscribe_ws = {
-    "Operation": "subscribe",
-    "Type": "WorldState",
-    "DebounceMs": 100,
-        "EventName": "WorldState",
-    }
 
     @staticmethod
     def name():
@@ -58,27 +38,45 @@ class MistyStateModule(abstract.AbstractProducingModule):
     def output_iu():
         return RobotStateIU
 
-    def __init__(self, ip, subscribe_self=True,subscribe_tof=True,subscribe_world=True **kwargs):
+    def subscribe_msg(self, item):
+        return  {
+        "Operation": "subscribe",
+        "Type": 'ActuatorPosition',
+        "DebounceMs": 100,
+        "EventName": item,
+        "EventConditions": [
+         {
+            "Property": "sensorName",
+            "Inequality": "==",
+            "Value": item
+         }
+        ]
+        }
+
+    def __init__(self, ip, subscribe_to=['Actuator_HeadPitch',
+                                         'Actuator_HeadYaw',
+                                         'Actuator_HeadRoll',
+                                         'Actuator_LeftArm',
+                                         'Actuator_RightArm'], **kwargs):
         super().__init__(**kwargs)
         self.ip = ip
+        self.subscribe_to = subscribe_to
         self.state_queue = deque()
-        self.sub_world = subscribe_world
-        self.sub_tof = subscribe_tof
-        self.sub_self = subscribe_self
-        
 
     def process_iu(self, input_iu):
         if len(self.state_queue) > 0:
-            state = self.state_queue.popleft()
-            output_iu = self.create_iu(input_iu)
-            output_iu.set_state(state)
-            return output_iu
+            state = json.loads(self.state_queue.popleft())
+            message = state['message']
+            if 'value' in message:
+                state = {state['eventName']:message['value']}
+                output_iu = self.create_iu(input_iu)
+                output_iu.set_state(state)
+                return output_iu
 
         return None
         
-        
-    def setup(self):
-        
+
+    def run_websocket(self):
         def on_message(ws, message):
             self.state_queue.append(message)
 
@@ -89,14 +87,16 @@ class MistyStateModule(abstract.AbstractProducingModule):
             print("### misty socket closed ###")
 
         def on_open(ws):
-            if self.sub_self: ws.send(json.dumps(subscribe_ss))
-            if self.sub_tof: ws.send(json.dumps(subscribe_tof))
-            if self.sub_world: ws.send(json.dumps(subscribe_ws)) 
+            for item in self.subscribe_to:
+                ws.send(json.dumps(self.subscribe_msg(item)))
 
-        # websocket.enableTrace(True)
-        ws = websocket.WebSocketApp("ws://{}pubsub".format(self.ip),
+        ws = websocket.WebSocketApp("ws://{}/pubsub".format(self.ip),
                                 on_message = on_message,
                                 on_error = on_error,
                                 on_close = on_close)
         ws.on_open = on_open
-        ws.run_forever()       
+        ws.run_forever()   
+        
+    def setup(self):
+        t = threading.Thread(target=self.run_websocket)
+        t.start()    
