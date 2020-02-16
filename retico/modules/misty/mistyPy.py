@@ -3,6 +3,8 @@ import json
 import threading
 import time
 import websocket
+import numpy as np 
+
 try:
     import thread
 except ImportError:
@@ -60,10 +62,12 @@ class Robot:
         assert velocity in range(0,101), " moveArm: Velocity needs to be in range 0 to 100"
         requests.post('http://'+self.ip+'/api/arms',json={"Arm": arm, "Position":position, "Velocity": velocity})
 
-    def move_head(self,roll,pitch,yaw,velocity=1):
-        assert roll in range(-54,46) and pitch in range(-45,46) and yaw in range(-45,46), " moveHead: Roll, Pitch and Yaw needs to be in range -45 to +45"
+    def move_head(self,roll,pitch,yaw,velocity=75):
+        assert -45 <= roll <= 45
+        assert -45 <= pitch <= 45
+        assert -70 <= yaw <= 70
         assert velocity in range(0,101), " moveHead: Velocity needs to be in range 0 to 100"
-        requests.post('http://'+self.ip+'/api/head',json={"Pitch": pitch, "Roll": roll, "Yaw": yaw, "Velocity": velocity})
+        requests.post('http://'+self.ip+'/api/head',json={"Pitch": int(pitch), "Roll": int(roll), "Yaw": int(yaw), "Velocity": velocity})
 
     def drive(self,linear_velocity, angular_velocity):
         assert linear_velocity in range(-100,101) and angular_velocity in range(-100,101), " drive: The velocities needs to be in the range -100 to 100"
@@ -80,6 +84,42 @@ class Robot:
     
     def stop(self):
         requests.post('http://'+self.ip+'/api/drive/stop')
+
+    def object_check(self, go_box):
+        xmin = go_box['xmin'] #/ self.max_x # scale to 0-1
+        xmax = go_box['xmax'] #/ self.max_x # scale to 0-1
+        ymin = go_box['ymin'] #/ self.max_y # scale to 0-1
+        ymax = go_box['ymax'] #/ self.max_y # scale to 0-1
+        height = ymax - ymin
+        width = xmax - xmin
+        height = height 
+        width = width 
+        area = height * width    
+        x_center = (width/2) + xmin
+        y_center = (height/2) + ymin
+        if area > 0.40 or ymin < 0.01 or ymax > 0.60: 
+            # print('check FAILED', 'ymin: ', ymin, 'ymax: ', ymax, 'obj area: ', area)
+            return (False, y_center, x_center)
+        else: 
+            # print('check PASSED', 'ymin: ', ymin, 'ymax: ', ymax, 'obj area: ', area)
+            return (True, y_center, x_center)
+
+    def find_coordinates(self, go_box):
+        real_obj = self.object_check(go_box)    
+        x_center = real_obj[2]
+        y_center = real_obj[1]
+        if not real_obj[0]: 
+            turn_angle = 0
+        else:
+            if x_center > 0.56 or x_center < 0.44:
+                x_diff = x_center - 0.5
+                turn_angle = (x_diff * (-50)) / 2
+            else: turn_angle = 0 
+            if y_center > 0.48 or y_center < 0.36:
+                y_diff = y_center - 0.42
+                base = y_diff * (-10)
+                
+        return real_obj[0], turn_angle            
         
     def send_backpack(self,message):
         assert isinstance(message, str), " sendBackpack: Message sent to the Backpack should be a string"
@@ -188,7 +228,7 @@ class Robot:
             out = "{ \"personName\" : \"" + data["message"]["personName"] + "\", \"distance\" : \"" + str(data["message"]["distance"]) + "\", \"elevation\" :\"" + str(data["message"]["elevation"]) + "\"}"
             return(json.loads(out))
         except:
-            return json.loads(self.face_recognition_instance.data)
+            return json.loads(self.face_recognition_instance.data)              
         
 
     def subscribe(self,Type,value=None,debounce =0):
@@ -368,7 +408,7 @@ class Socket:
                 "EventName": self.event_name,
                 "Message": ""}
         
-        return unsubscribeMsg
+        return unsubscribeMsg   
 
 if __name__ == '__main__':
     robot = Robot('10.10.0.7')

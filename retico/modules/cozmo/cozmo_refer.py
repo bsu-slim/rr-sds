@@ -114,6 +114,7 @@ class CozmoReferModule(abstract.AbstractModule):
                     self.cb.say("{} not {}".format(w, self._current_word))
                     self.cb.back_up()
                     self._last_command = 'begin_explore'
+                    self.update_dialogue_state('begin_explore', True)
 
         except cozmo.exceptions.RobotBusy:
             print('robot is busy')

@@ -82,23 +82,34 @@ class MistyReferModule(abstract.AbstractModule):
         current_roll = self.current_state['Actuator_HeadRoll'] if 'Actuator_HeadRoll' in self.current_state else 0.0
         print(current_pitch, current_yaw, current_roll)
         # while self.robot.is_moving:
-        #     self.robot.stop_all_motors()
+        self.robot.stop()
         if 'begin_explore' == command:
             self.update_dialogue_state('exploring', True)
-            # explore
+            new_yaw = random.randint(-70,70) # move head left/right randomly
+            new_pitch = random.randint(15,25)
+            self.robot.move_head(current_roll, new_pitch, new_yaw)
+
         if 'align_to_object' == command:
-            # for _ in range(3):
-                # turn torward object
-            self.update_dialogue_state('aligned', True)
+            if 'object0' in self.current_objects:
+                top_object = self.current_objects['object0']
+            for _ in range(3):
+                real_object, turn_angle = self.robot.find_coordinates(top_object)
+                if real_object:
+                    self.robot.move_head(current_roll, current_pitch, current_yaw + turn_angle)
+                    self.update_dialogue_state('aligned', True)
         if 'check_confidence' == command:
             print(self._current_word, confidence)
 
             self.update_dialogue_state('aligned', False)
             self.update_dialogue_state('near_object', False)
+            self.update_dialogue_state('exploring', False)
 
             if confidence > 0.6:
                 # say word
                 # indicate object
+                self.robot.change_LED(0,255,0)
+                time.sleep(2)
+                self.robot.change_LED(0,0,0)
                 self.update_dialogue_state('word_to_find', None)
                 self.update_dialogue_state('exploring', False)
             else:
@@ -106,12 +117,17 @@ class MistyReferModule(abstract.AbstractModule):
                 w = random.choice(['hmmm', 'uhh', 'that'])
                 # say "not x"
                 #self.cb.say("{} not {}".format(w, self._current_word))
+                self.robot.change_LED(255,0,0)
+                time.sleep(2)
+                self.robot.change_LED(0,0,0)
                 self._last_command = 'begin_explore'
+                self.update_dialogue_state('begin_explore', True)
+                
 
     def process_iu(self, input_iu):
         
         if isinstance(input_iu, DetectedObjectsIU):
-            # set current objs?
+            self.current_objects = input_iu.payload
             return None
 
         if isinstance(input_iu, RobotStateIU):
@@ -148,6 +164,8 @@ class MistyReferModule(abstract.AbstractModule):
         arm_deg = 30
         self.robot.move_arm('left', arm_deg)
         self.robot.move_arm('right', arm_deg)
+
+        self.robot.change_LED(0,0,0)
 
 
     def setup(self):

@@ -4,47 +4,71 @@
 
 
 	<initialstate>
-		<variable id="concept"><value>null</value></variable>
-		<variable id="confirmState"><value>false</value></variable>
+		<variable id="num_objs"><value>0</value></variable>
+		<variable id="face_count"><value>0</value></variable>
+		<variable id="exploring"><value>0</value></variable>
+		<variable id="aligned"><value>0</value></variable>
+		<variable id="word_to_find"><value>None</value></variable>
+		<variable id='best_object'><value>None</value></variable>
+		<variable id='obj_confidence'><value>None</value></variable>
+
 	</initialstate>
 
-	<model trigger="concept">
+	<model trigger="best_object,aligned,num_objs,face_count,exploring,word_to_find">
 	
 	
-		<rule id="ruleClarify">
+		<rule id="rule_face_find">
 			<case>
 				<condition>
-					<if var="concept" relation="&gt;" value="0.30"/>
-					<if var="concept" relation="&lt;" value="0.39"/>
+					<if var="face_count" value="1"/>
 				</condition>
 				<effect>
-					<set var="decision" value="clarify"/>
-					<set var="confirmState" value="true"/>
+					<set var="decision" value="face_found"/>
+				</effect>				
+			</case>
+		</rule>	
+
+		<rule id="rule_word_object_near">
+			<case>
+				<condition>
+					<if var="best_object" relation="!=" value='None'/>
+					<if var='exploring'  relation='!=' value='0'/>
+					<if var='aligned'  relation='!=' value='0'/>
+				</condition>
+				<effect>
+					<set var="decision" value="check_confidence:{obj_confidence}"/>
+				</effect>				
+			</case>
+		</rule>	
+
+		<rule id="rule_word_heard_obj_sigted">
+			<case>
+				<condition>
+					<if var="word_to_find" relation="!=" value="None"/>
+					<if var='num_objs' relation="!=" value='0' />
+					<if var='exploring'  relation='!=' value='0'/>
+					<if var='aligned'  relation='!=' value='1'/>
+				</condition>
+				<effect>
+					<set var="decision" value="align_to_object"/>
+				</effect>				
+			</case>
+		</rule>	
+
+
+		<rule id="rule_word_heard">
+			<case>
+				<condition>
+					<if var="word_to_find" relation="!=" value="None"/>
+					<if var='exploring' relation='!=' value='1'/>
+				</condition>
+				<effect>
+					<set var="decision" value="begin_explore({word_to_find})"/>
 				</effect>				
 			</case>
 		</rule>	
 	
-		<rule id="ruleSelect">
-			<case>
-				<condition>
-					<if var="concept" relation="&gt;" value="0.4"/>
-				</condition>
-				<effect>
-					<set var="decision" value="select"/>
-				</effect>				
-			</case>
-		</rule>
-		
-		<rule id="ruleWait">
-			<case>
-				<condition>
- 					<if var="concept" relation="&lt;" value="0.29"/>
-				</condition>
-				<effect>
-					<set var="decision" value="wait"/>
-				</effect>				
-			</case>
-		</rule>		
+	
 		
 	</model>
 
