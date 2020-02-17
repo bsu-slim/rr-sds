@@ -7,6 +7,8 @@ warnings.filterwarnings('ignore')
 os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-ca5bdacf1d9a.json'
 os.environ['PYOD'] = '/home/casey/git/PyOpenDial'
 os.environ['RASA'] = "/home/casey/git/rasa_nlu"
+os.environ['TF_RESEARCH'] = '/home/casey/git/tfmodels/research'
+os.environ['TF_SLIM'] = '/home/casey/git/tfmodels/research/slim'
 
 import cv2
 
@@ -22,6 +24,7 @@ from retico.core.text.asr import IncrementalizeASRModule
 from retico.modules.keras.object_features import KerasObjectFeatureExtractorModule
 from retico.modules.azure.object_detection import AzureObjectDetectionModule
 from retico.modules.slim.words_as_classifiers import WordsAsClassifiersModule
+from retico.modules.google.od import MaskrRCNNObjectDetection
 from retico.core.visual.common import ImageIU
 
 # how to restart an utterance?
@@ -34,6 +37,8 @@ domain_dir = '/home/casey/git/PyOpenDial/domains/augi/augi.xml'
 aod_endpoint = "https://slimcomputervision.cognitiveservices.azure.com/"
 aod_key = "59bfd2dc248a4d08957edf7a6eb6331f"
 wac_dir = '/home/casey/git/retico/data/wac/subset'
+mask_rcnn_labels = '/home/casey/git/retico/data/maskrcnn/label_map.pbtxt'
+mask_rcnn_model = '/home/casey/git/retico/data/maskrcnn/frozen_inference_graph.pb'
 
 # instantiate modules
 mic = MicrophoneModule(1000)
@@ -42,9 +47,10 @@ mic = MicrophoneModule(1000)
 # asr = GoogleASRModule(rate=16000)
 asr = GoogleASRModule()
 iasr = IncrementalizeASRModule()
+obj_det = MaskrRCNNObjectDetection(mask_rcnn_labels, mask_rcnn_model)
 # nlu = RasaNLUModule(model_dir=model_dir)
 # dm = OpenDialModule(domain_dir=domain_dir)
-obj_det = AzureObjectDetectionModule(key=aod_key,endpoint=aod_endpoint)
+# obj_det = AzureObjectDetectionModule(key=aod_key,endpoint=aod_endpoint)
 feat_ext = KerasObjectFeatureExtractorModule()
 wac = WordsAsClassifiersModule(wac_dir=wac_dir)
 
@@ -72,12 +78,12 @@ feat_ext.run()
 wac.run()
 debug.run()
 
-img = cv2.imread('data/azure/skateboarder.jpg', cv2.IMREAD_UNCHANGED)
+img = cv2.imread('/home/casey/git/retico/examples/tmp0.13436424411240122.png', cv2.IMREAD_UNCHANGED)
 img_iu = ImageIU()
 img_iu.set_image(img, 1, 1)
 
-output_iu = obj_det.process_iu(img_iu)
-feats = feat_ext.process_iu(output_iu)
+obj_det.append(img_iu)
+# feats = feat_ext.process_iu(output_iu)
 
 while wac.word_buffer is None:
     time.sleep(1.0)

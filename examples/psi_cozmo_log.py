@@ -22,6 +22,7 @@ sys.path.append(os.environ['COZMO'])
 import cozmo
 
 # retico
+import retico
 from retico.core.audio.io import MicrophoneModule
 from retico.core.debug.console import DebugModule
 from retico.core.audio.io import StreamingSpeakerModule
@@ -83,8 +84,8 @@ def init_all(robot : cozmo.robot.Robot):
 
     # psi related modules
     # WriterSingleton should use the *source* ip address (i.e., this machine's)
-    WriterSingleton(ip='10.255.146.186', port='12346') # create the zeromq writer
-    iasr_psi = ZeroMQWriter(topic='asr')
+    # WriterSingleton(ip='10.255.146.186', port='12346') # create the zeromq writer
+    # iasr_psi = ZeroMQWriter(topic='asr')
     # nlu_psi = ZeroMQWriter(topic='nlu')
     # dm_psi = ZeroMQWriter(topic='dm')
    
@@ -106,7 +107,7 @@ def init_all(robot : cozmo.robot.Robot):
     object_detector.subscribe(feature_extractor)
     feature_extractor.subscribe(wac)
 
-    iasr.subscribe(iasr_psi)
+    # iasr.subscribe(iasr_psi)
     # nlu.subscribe(nlu_psi)
     # dm.subscribe(dm_psi)
     # feat_ext.subscribe(feat_ext_psi)
@@ -129,7 +130,7 @@ def init_all(robot : cozmo.robot.Robot):
 
     # dm_psi.run()
     # nlu_psi.run()
-    iasr_psi.run()
+    # iasr_psi.run()
 
     input() # keep everything running
 
@@ -145,7 +146,7 @@ def init_all(robot : cozmo.robot.Robot):
     wac.stop()
 
     # dm_psi.stop()
-    iasr_psi.stop()
+    # iasr_psi.stop()
     # nlu_psi.stop()
 
 cozmo.run_program(init_all, use_viewer=True, force_viewer_on_top=False)

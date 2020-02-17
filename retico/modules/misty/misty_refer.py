@@ -58,6 +58,13 @@ class MistyReferModule(abstract.AbstractModule):
         output_iu.set_payload({signal:value})
         self.append(output_iu)
 
+    def get_next_yaw(self):
+        if len(self._to_check) == 0:
+            return None
+        next_yaw = self._to_check[0]
+        self._to_check = self._to_check[1:]
+        return next_yaw
+
     def run_command(self, command, input_iu):
         if self.robot is None: return
         if command is None: return
@@ -68,6 +75,7 @@ class MistyReferModule(abstract.AbstractModule):
             # say word
             command = command[:command.find('(')]
 
+        confidence = 0.0
         if ':' in command:
             confidence = float(command[command.find(':')+1:])
             command = command[:command.find(':')]
@@ -80,49 +88,59 @@ class MistyReferModule(abstract.AbstractModule):
         current_pitch = self.current_state['Actuator_HeadPitch'] if 'Actuator_HeadPitch' in self.current_state else 0.0
         current_yaw = self.current_state['Actuator_HeadYaw'] if 'Actuator_HeadYaw' in self.current_state else 0.0
         current_roll = self.current_state['Actuator_HeadRoll'] if 'Actuator_HeadRoll' in self.current_state else 0.0
-        print(current_pitch, current_yaw, current_roll)
-        # while self.robot.is_moving:
-        self.robot.stop()
+
         if 'begin_explore' == command:
             self.update_dialogue_state('exploring', True)
-            new_yaw = random.randint(-70,70) # move head left/right randomly
-            new_pitch = random.randint(15,25)
+            new_pitch = random.randint(20,25)
+            new_yaw = self.get_next_yaw()
+            if new_yaw is None: 
+                self.set_start_position()
+                return
             self.robot.move_head(current_roll, new_pitch, new_yaw)
+            time.sleep(3)
 
         if 'align_to_object' == command:
             if 'object0' in self.current_objects:
                 top_object = self.current_objects['object0']
             for _ in range(3):
                 real_object, turn_angle = self.robot.find_coordinates(top_object)
-                if real_object:
-                    self.robot.move_head(current_roll, current_pitch, current_yaw + turn_angle)
+                self.robot.move_head(current_roll, current_pitch, current_yaw + turn_angle)
+                if turn_angle <= 1:
+                    time.sleep(4)
                     self.update_dialogue_state('aligned', True)
+                    break
+    
+
         if 'check_confidence' == command:
+
             print(self._current_word, confidence)
 
-            self.update_dialogue_state('aligned', False)
-            self.update_dialogue_state('near_object', False)
-            self.update_dialogue_state('exploring', False)
-
-            if confidence > 0.6:
+            if confidence > 0.4:
+                self.update_dialogue_state('word_to_find', 'None')
                 # say word
                 # indicate object
-                self.robot.change_LED(0,255,0)
+                self.robot.move_arm('right', -25)
                 time.sleep(2)
-                self.robot.change_LED(0,0,0)
-                self.update_dialogue_state('word_to_find', None)
-                self.update_dialogue_state('exploring', False)
-            else:
                 self.set_start_position()
-                w = random.choice(['hmmm', 'uhh', 'that'])
+
+            else:
                 # say "not x"
                 #self.cb.say("{} not {}".format(w, self._current_word))
-                self.robot.change_LED(255,0,0)
+                self.robot.move_arm('left', -25)
                 time.sleep(2)
-                self.robot.change_LED(0,0,0)
-                self._last_command = 'begin_explore'
-                self.update_dialogue_state('begin_explore', True)
+                new_yaw = self.get_next_yaw()
+                if new_yaw is None:
+                    self.set_start_position()
+                    return
+                self.update_dialogue_state('aligned', False)
                 
+                # self.update_dialogue_state('begin_explore', True)
+            self.robot.move_arm('right', 25)
+            self.robot.move_arm('left', 25)
+            self._last_command = None
+            time.sleep(3)
+            # self.update_dialogue_state('exploring', False)
+
 
     def process_iu(self, input_iu):
         
@@ -145,8 +163,8 @@ class MistyReferModule(abstract.AbstractModule):
 
          while True:
             if len(self.queue) == 0:
-                time.sleep(3.0)
                 self.run_command(self._last_command, self._input_iu)
+                time.sleep(3.0)
                 continue
 
             input_iu = self.queue.popleft()
@@ -156,6 +174,14 @@ class MistyReferModule(abstract.AbstractModule):
             self.run_command(decision, input_iu)        
 
     def set_start_position(self):
+        self._to_check = [-50,50]
+        random.shuffle(self._to_check)
+        self._last_command = None
+        self.update_dialogue_state('word_to_find', 'None')
+        self.update_dialogue_state('exploring', False)
+        self.update_dialogue_state('aligned', False)
+        
+
         roll = 0
         pitch = 25
         yaw = 0

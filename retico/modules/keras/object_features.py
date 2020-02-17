@@ -19,6 +19,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from PIL import Image as PImage
 import cv2
+import psutil
 
 
 class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
@@ -112,6 +113,11 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
             return yhat
 
     def process_iu(self, input_iu):
+
+        for proc in psutil.process_iter():
+            if proc.name() == "display":
+                proc.kill()
+
         image = input_iu.image
         detected_objects = input_iu.detected_objects
         object_features = {}

@@ -57,7 +57,7 @@ class Robot:
         resp = resp.json()
         return resp['result']
 
-    def move_arm(self,arm,position,velocity=50):
+    def move_arm(self,arm,position,velocity=75):
         assert position in range(-91,91), " moveArm: position needs to be -90 to 90"
         assert velocity in range(0,101), " moveArm: Velocity needs to be in range 0 to 100"
         requests.post('http://'+self.ip+'/api/arms',json={"Arm": arm, "Position":position, "Velocity": velocity})

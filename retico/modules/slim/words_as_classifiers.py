@@ -51,7 +51,7 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
 
         frame = {}
         if isinstance(input_iu, SpeechRecognitionIU):
-            self.word_buffer = input_iu.get_text().split()[0]
+            self.word_buffer = input_iu.get_text().lower().split()[0]
             frame['word_to_find'] = self.word_buffer
         
         # when new objects are observed (i.e., not SpeechRecognitionIUs)

@@ -6,7 +6,7 @@ import os
 import sys
 
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-78e88daf614b.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-ca5bdacf1d9a.json'
 os.environ['PYOD'] = '/home/casey/git/PyOpenDial'
 os.environ['TF_RESEARCH'] = '/home/casey/git/tfmodels/research'
 os.environ['TF_SLIM'] = '/home/casey/git/tfmodels/research/slim'
@@ -25,7 +25,6 @@ from retico.modules.opendial.dm import OpenDialModule
 from retico.core.text.asr import IncrementalizeASRModule
 from retico.modules.keras.object_features import KerasObjectFeatureExtractorModule
 from retico.core.audio.io import RespeakerMicrophoneModule
-# from retico.modules.azure.object_detection import AzureObjectDetectionModule
 from retico.modules.google.od import MaskrRCNNObjectDetection
 from retico.interop.zeromq.io import ZeroMQWriter
 from retico.interop.zeromq.io import WriterSingleton
@@ -43,12 +42,12 @@ aod_key = "59bfd2dc248a4d08957edf7a6eb6331f"
 wac_dir = '/home/casey/git/retico/data/wac/subset'
 mask_rcnn_labels = '/home/casey/git/retico/data/maskrcnn/label_map.pbtxt'
 mask_rcnn_model = '/home/casey/git/retico/data/maskrcnn/frozen_inference_graph.pb'
-misty_ip = '192.168.0.27'
+misty_ip = '10.10.0.7'
 
 opendial_variables = ['face_count', # 
                         'num_objs', # ObjectDetector
                         'exploring', # MistyReferModule
-                        'aligned', # 
+                        'aligned', #  MistyReferModule
                         'word_to_find', # WordsAsClassifiersModule
                         'best_object', # WordsAsClassifiersModule
                         'obj_confidence'] # WordsAsClassifiersModule
@@ -68,7 +67,7 @@ misty_camera = MistyCameraModule(misty_ip)
 misty_refer = MistyReferModule(misty_ip)
 misty_state = MistyStateModule(misty_ip)
 # object_detector = AzureObjectDetectionModule(aod_key, aod_endpoint)
-object_detector = MaskrRCNNObjectDetection(mask_rcnn_labels, mask_rcnn_model)
+object_detector = MaskrRCNNObjectDetection(mask_rcnn_labels, mask_rcnn_model, max_objs=1)
 feature_extractor = KerasObjectFeatureExtractorModule()
 wac = WordsAsClassifiersModule(wac_dir=wac_dir)
 debug = DebugModule()
@@ -85,20 +84,21 @@ mic.subscribe(asr)
 asr.subscribe(iasr)
 iasr.subscribe(wac)
 wac.subscribe(dm)
-misty_camera.subscribe(object_detector)
-misty_state.subscribe(misty_refer)
+
+
 
 # robot state as input
-object_detector.subscribe(dm)
-# dm.subscribe(debug)
+misty_state.subscribe(misty_refer)
 dm.subscribe(misty_refer)
 misty_refer.subscribe(dm)
 object_detector.subscribe(misty_refer)
-# object_detector.subscribe()
 
 # robot camera as input
+misty_camera.subscribe(object_detector)
 object_detector.subscribe(feature_extractor)
+object_detector.subscribe(dm)
 feature_extractor.subscribe(wac)
+
 
 # iasr.subscribe(iasr_psi)
 # nlu.subscribe(nlu_psi)
