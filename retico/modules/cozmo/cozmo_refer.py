@@ -18,7 +18,7 @@ import sys
 import os
 sys.path.append(os.environ['COZMO'])
 import cozmo
-from cozmo.util import degrees, distance_mm, speed_mmps
+from cozmo.util import distance_mm, speed_mmps
 
 
 class CozmoReferModule(abstract.AbstractModule):
