@@ -61,8 +61,8 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
             intents = objects.keys()
             features = [np.array(objects[obj_id]) for obj_id in objects]
             
-            word = self.wac.best_word((intents, features))
-            print("best word", word)
+            # word = self.wac.best_word((intents, features))
+            # print("best word", word)
 
             if self.word_buffer is not None:
                 target = self.wac.best_object(self.word_buffer, (intents, features))

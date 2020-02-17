@@ -6,9 +6,8 @@ import os
 import sys
 
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-ca5bdacf1d9a.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-78e88daf614b.json'
 os.environ['PYOD'] = '/home/casey/git/PyOpenDial'
-os.environ['RASA'] = "/home/casey/git/rasa_nlu"
 os.environ['TF_RESEARCH'] = '/home/casey/git/tfmodels/research'
 os.environ['TF_SLIM'] = '/home/casey/git/tfmodels/research/slim'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # error level
@@ -22,7 +21,6 @@ from retico.core.audio.io import MicrophoneModule
 from retico.core.debug.console import DebugModule
 from retico.core.audio.io import StreamingSpeakerModule
 from retico.modules.google.asr import GoogleASRModule
-from retico.modules.rasa.nlu import RasaNLUModule
 from retico.modules.opendial.dm import OpenDialModule
 from retico.core.text.asr import IncrementalizeASRModule
 from retico.modules.keras.object_features import KerasObjectFeatureExtractorModule
@@ -34,21 +32,23 @@ from retico.interop.zeromq.io import WriterSingleton
 from retico.modules.slim.words_as_classifiers import WordsAsClassifiersModule
 from retico.core.visual.io import WebcamModule
 from retico.modules.misty.misty_camera import MistyCameraModule
+from retico.modules.misty.misty_refer import MistyReferModule
+from retico.modules.misty.misty_state import MistyStateModule
 # had to change is_running to _is_running because opendial modules have an is_running() method
 
 
-domain_dir = '/home/casey/git/retico/data/cozmo/dm/dialogue.xml'
+domain_dir = '/home/casey/git/retico/data/misty/dm/dialogue.xml'
 aod_endpoint = "https://slimcomputervision.cognitiveservices.azure.com/"
 aod_key = "59bfd2dc248a4d08957edf7a6eb6331f"
 wac_dir = '/home/casey/git/retico/data/wac/subset'
 mask_rcnn_labels = '/home/casey/git/retico/data/maskrcnn/label_map.pbtxt'
 mask_rcnn_model = '/home/casey/git/retico/data/maskrcnn/frozen_inference_graph.pb'
+misty_ip = '192.168.0.27'
 
-opendial_variables = ['face_count', # CozmoStateModule
+opendial_variables = ['face_count', # 
                         'num_objs', # ObjectDetector
-                        'near_object', # CozmoRefer
-                        'exploring', # CozmoRefer
-                        'aligned', # CozmoRefer
+                        'exploring', # MistyReferModule
+                        'aligned', # 
                         'word_to_find', # WordsAsClassifiersModule
                         'best_object', # WordsAsClassifiersModule
                         'obj_confidence'] # WordsAsClassifiersModule
@@ -64,7 +64,9 @@ asr = GoogleASRModule()
 iasr = IncrementalizeASRModule()
 dm = OpenDialModule(domain_dir=domain_dir, variables=opendial_variables)
 # cozmo_camera = WebcamModule()
-misty_camera = MistyCameraModule('10.10.0.7')
+misty_camera = MistyCameraModule(misty_ip)
+misty_refer = MistyReferModule(misty_ip)
+misty_state = MistyStateModule(misty_ip)
 # object_detector = AzureObjectDetectionModule(aod_key, aod_endpoint)
 object_detector = MaskrRCNNObjectDetection(mask_rcnn_labels, mask_rcnn_model)
 feature_extractor = KerasObjectFeatureExtractorModule()
@@ -84,10 +86,14 @@ asr.subscribe(iasr)
 iasr.subscribe(wac)
 wac.subscribe(dm)
 misty_camera.subscribe(object_detector)
+misty_state.subscribe(misty_refer)
 
 # robot state as input
 object_detector.subscribe(dm)
-dm.subscribe(debug)
+# dm.subscribe(debug)
+dm.subscribe(misty_refer)
+misty_refer.subscribe(dm)
+object_detector.subscribe(misty_refer)
 # object_detector.subscribe()
 
 # robot camera as input
@@ -109,9 +115,11 @@ iasr.run()
 dm.run()
 object_detector.run()
 feature_extractor.run()
-wac.run()
+misty_state.run()
+misty_refer.run()
 misty_camera.run()
-debug.run()
+wac.run()
+# debug.run()
 
 # dm_psi.run()
 # nlu_psi.run()
@@ -126,6 +134,7 @@ dm.stop()
 object_detector.stop()
 feature_extractor.stop()
 wac.stop()
+misty_refer.stop()
 misty_camera.stop()
 
 # dm_psi.stop()
