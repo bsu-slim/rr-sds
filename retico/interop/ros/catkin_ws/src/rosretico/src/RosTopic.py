@@ -40,10 +40,14 @@ class RosTopic(abstract.AbstractModule):
         """
         super().__init__(**kwargs)
         self.publisher = rospy.Publisher(str(topic), String, queue_size=10)
+        self.subscriber = rospy.Subscriber(str(topic), String, self.callback)
         rospy.loginfo('Created publisher on topic ' + str(topic))
 
     def process_iu(self, input_iu):
         self.publisher.publish(input_iu.payload)
+
+    def callback(self, data):
+        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
 
     def setup(self):
         pass
