@@ -68,6 +68,16 @@ Some third party libraries are not included into ReTiCo and have to be installed
 
 In the ReTiCo Builder, the modules won't appear in the list of available modules until you install the third pary library.
 
+### ZeroMQ
+
+For easy interop between distributed modules, or between retico and other programming languages, you can use ZeroMQ. 
+
+For ubuntu:
+
+```
+sudo apt install python-zmq
+```
+
 ### Google Cloud Speech
 
 To use the Automatic Speech Recognition module utilizing google cloud speech, you need to install the thrid party package first.
