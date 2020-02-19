@@ -115,7 +115,7 @@ class MistyReferModule(abstract.AbstractModule):
 
             print(self._current_word, confidence)
 
-            if confidence > 0.4:
+            if confidence > 0.5:
                 self.update_dialogue_state('word_to_find', 'None')
                 # say word
                 # indicate object
@@ -131,6 +131,7 @@ class MistyReferModule(abstract.AbstractModule):
                 new_yaw = self.get_next_yaw()
                 if new_yaw is None:
                     self.set_start_position()
+                    self._last_command = None
                     return
                 self.update_dialogue_state('aligned', False)
                 

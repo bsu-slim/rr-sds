@@ -36,9 +36,12 @@ class MistyCameraModule(abstract.AbstractProducingModule):
     def take_picture(self, ip):
         resp = requests.get('http://'+ip+'/api/cameras/rgb?base64=true&width='+str(self.width)+'&height='+str(self.height))
         resp = resp.json()
-        return (resp['result'])
+        if 'result' in resp:
+            return (resp['result'])
+        else:
+            print('misty camera response:', resp)
 
-    def __init__(self, ip, width=320, height=427, **kwargs):
+    def __init__(self, ip, width=640, height=480, **kwargs):
         super().__init__(**kwargs)
         self.width = width
         self.height = height
@@ -46,6 +49,7 @@ class MistyCameraModule(abstract.AbstractProducingModule):
 
     def process_iu(self, input_iu):
         result = self.take_picture(self.ip)
+        if result is None: return None
         im = Image.open(BytesIO(base64.b64decode(result.get('base64'))))
         output_iu = self.create_iu(input_iu)
         output_iu.set_image(im, 1, 1)

@@ -63,11 +63,11 @@ mic = MicrophoneModule(1000)
 asr = GoogleASRModule()
 iasr = IncrementalizeASRModule()
 dm = OpenDialModule(domain_dir=domain_dir, variables=opendial_variables)
-# cozmo_camera = WebcamModule()
-misty_camera = MistyCameraModule(misty_ip)
-misty_refer = MistyReferModule(misty_ip)
-misty_state = MistyStateModule(misty_ip)
-cropper = ImageCropperModule(top=200)
+webcam = WebcamModule()
+# misty_camera = MistyCameraModule(misty_ip)
+# misty_refer = MistyReferModule(misty_ip)
+# misty_state = MistyStateModule(misty_ip)
+# cropper = ImageCropperModule(top=200)
 # object_detector = AzureObjectDetectionModule(aod_key, aod_endpoint)
 object_detector = MaskrRCNNObjectDetection(mask_rcnn_labels, mask_rcnn_model, max_objs=1)
 feature_extractor = KerasObjectFeatureExtractorModule()
@@ -78,10 +78,8 @@ print('All modules instantiated.')
 
 # psi related modules
 # WriterSingleton should use the *source* ip address (i.e., this machine's)
-# WriterSingleton(ip='10.255.146.186', port='12346') # create the zeromq writer
-# iasr_psi = ZeroMQWriter(topic='asr')
-# nlu_psi = ZeroMQWriter(topic='nlu')
-# dm_psi = ZeroMQWriter(topic='dm')
+WriterSingleton(ip='10.255.221.241', port='12346') # create the zeromq writer
+psi = ZeroMQWriter(topic='retico')
 
 # mic as input
 mic.subscribe(asr)
@@ -90,46 +88,49 @@ iasr.subscribe(wac)
 wac.subscribe(dm)
 
 # robot state as input
-misty_state.subscribe(misty_refer)
-dm.subscribe(misty_refer)
-misty_refer.subscribe(dm)
-object_detector.subscribe(misty_refer)
+# misty_state.subscribe(misty_refer)
+# dm.subscribe(misty_refer)
+# misty_refer.subscribe(dm)
+# object_detector.subscribe(misty_refer)
 
 # robot camera as input
-misty_camera.subscribe(cropper)
-cropper.subscribe(object_detector)
+# misty_camera.subscribe(cropper)
+# cropper.subscribe(object_detector)
+webcam.subscribe(object_detector)
 object_detector.subscribe(feature_extractor)
 object_detector.subscribe(dm)
 feature_extractor.subscribe(wac)
+# wac.subscribe(debug)
 
 print('All modules subscribed.')
 
-
-# iasr.subscribe(iasr_psi)
-# nlu.subscribe(nlu_psi)
-# dm.subscribe(dm_psi)
+object_detector.subscribe(psi)
+feature_extractor.subscribe(psi)
+iasr.subscribe(psi)
+wac.subscribe(psi)
+dm.subscribe(psi)
 # feat_ext.subscribe(feat_ext_psi)
 # obj_det.subscribe(obj_det_psi)
 
 #
 # INITIALIZE MODULES
 # 
+webcam.run()
 mic.run()
 asr.run()
 iasr.run()
 dm.run()
 object_detector.run()
 feature_extractor.run()
-misty_state.run()
-misty_refer.run()
-misty_camera.run()
-cropper.run()
+# misty_state.run()
+# misty_refer.run()
+# misty_camera.run()
+# cropper.run()
 wac.run()
-# debug.run()
+debug.run()
 print('All modules running.')
 # dm_psi.run()
-# nlu_psi.run()
-# iasr_psi.run()
+psi.run()
 
 input() # keep everything running
 
@@ -142,7 +143,7 @@ feature_extractor.stop()
 wac.stop()
 misty_refer.stop()
 misty_camera.stop()
-cropper.stop()
+# cropper.stop()
 
 # dm_psi.stop()
 # iasr_psi.stop()

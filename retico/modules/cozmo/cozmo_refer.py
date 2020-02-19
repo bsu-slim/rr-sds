@@ -103,7 +103,7 @@ class CozmoReferModule(abstract.AbstractModule):
                 self.update_dialogue_state('aligned', False)
                 self.update_dialogue_state('near_object', False)
 
-                if confidence > 0.6:
+                if confidence > 0.5:
                     self.cb.say(self._current_word)
                     self.cb.indicate_object()
                     self.update_dialogue_state('word_to_find', None)

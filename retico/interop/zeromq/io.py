@@ -1,5 +1,7 @@
 # retico
 from retico.core import abstract
+from retico.core.visual.common import DetectedObjectsIU
+from retico.core.visual.common import ObjectFeaturesIU
 from retico.core.dialogue.common import DialogueActIU
 from retico.core.visual.common import ImageIU
 
@@ -157,12 +159,14 @@ class ZeroMQWriter(abstract.AbstractModule):
         '''
         This assumes that the message is json formatted, then packages it as payload into an IU
         '''
-        if isinstance(input_iu, ImageIU):
-            payload = input_iu.get_json()
+        payload = {}
+        payload['originatingTime'] = datetime.datetime.now().isoformat()
+        
+        print(input_iu.payload)
+        if isinstance(input_iu, ImageIU) or isinstance(input_iu, DetectedObjectsIU)  or isinstance(input_iu, ObjectFeaturesIU):
+            payload['message'] = json.dumps(input_iu.get_json())
         else:
-            payload = {}
             payload['message'] = json.dumps(input_iu.payload)
-            payload['originatingTime'] = datetime.datetime.now().isoformat()
 
         self.writer.send_multipart([self.topic, json.dumps(payload).encode('utf-8')])
 

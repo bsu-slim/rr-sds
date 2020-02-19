@@ -3,6 +3,7 @@ A Module that offers different types of real time speech recognition.
 """
 
 import queue
+import time
 import threading
 from retico.core import abstract
 from retico.core.text.common import SpeechRecognitionIU
@@ -129,15 +130,30 @@ class GoogleASRModule(abstract.AbstractModule):
             config=config, interim_results=True
         )
 
+    def request_thread(self):
+        requests = None
+        while True:
+            try:
+                if requests is not None:
+                    time.sleep(1.0)
+                    continue
+                requests = (
+                    types.StreamingRecognizeRequest(audio_content=content)
+                    for content in self._generator()
+                )
+                print(requests)
+                self.responses = self.client.streaming_recognize(
+                    self.streaming_config, requests
+                )
+                t = threading.Thread(target=self._produce_predictions_loop)
+                t.start()
+            except:
+                requests = None
+                print('Google Thread Died. Attempting to Restart.')
+        
+
     def prepare_run(self):
-        requests = (
-            types.StreamingRecognizeRequest(audio_content=content)
-            for content in self._generator()
-        )
-        self.responses = self.client.streaming_recognize(
-            self.streaming_config, requests
-        )
-        t = threading.Thread(target=self._produce_predictions_loop)
+        t = threading.Thread(target=self.request_thread)
         t.start()
 
     def shutdown(self):
