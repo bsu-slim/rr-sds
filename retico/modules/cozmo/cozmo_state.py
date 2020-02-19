@@ -39,7 +39,7 @@ class CozmoStateModule(abstract.AbstractProducingModule):
     def __init__(self, robot, **kwargs):
         super().__init__(**kwargs)
         self.robot = robot
-        self.state_queue = deque()
+        self.state_queue = deque(maxlen=3)
         
 
     def process_iu(self, input_iu):
@@ -57,21 +57,18 @@ class CozmoStateModule(abstract.AbstractProducingModule):
         self.num_frames = 0
 
         def state_change_update(evt, obj=None, tap_count=None, **kwargs):
+            if np.round(time.time() % 2, 1) < 0.1: # Get only about half of the frames per ten seconds
+                robot = kwargs['robot']
+                state = robot.get_robot_state_dict()
+                state.update({"left_wheel_speed":str(robot.left_wheel_speed)})
+                state.update({"right_wheel_speed":str(robot.right_wheel_speed)})
+                state.update({"battery_voltage":str(robot.battery_voltage)})
+                state.update({"robot_id":str(robot.robot_id)})
+                state.update({"time":str(time.time())})
+                state.update({'face_count': str(robot.world.visible_face_count())})
+                self.state_queue.append(state)
 
-            robot = kwargs['robot']
-            state = robot.get_robot_state_dict()
-    
-            state.update({"left_wheel_speed":str(robot.left_wheel_speed)})
-            state.update({"right_wheel_speed":str(robot.right_wheel_speed)})
-            state.update({"battery_voltage":str(robot.battery_voltage)})
-            state.update({"robot_id":str(robot.robot_id)})
-            state.update({"time":str(time.time())})
-            state.update({'face_count': str(robot.world.visible_face_count())})
-
-            self.state_queue.clear()
-            self.state_queue.append(state)
-
-        self.robot.add_event_handler(cozmo.robot.EvtRobotStateUpdated, state_change_update)
+        self.robot.world.add_event_handler(cozmo.robot.EvtRobotStateUpdated, state_change_update)
 
 
 

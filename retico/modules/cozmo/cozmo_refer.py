@@ -49,7 +49,7 @@ class CozmoReferModule(abstract.AbstractModule):
         self._current_word = None
         self.current_objects = None
         self.cb = CozmoBehaviors(robot)
-        self.queue = deque()
+        self.queue = deque(maxlen=3)
         t = threading.Thread(target=self.run_dispatcher)
         t.start()
 
@@ -79,9 +79,9 @@ class CozmoReferModule(abstract.AbstractModule):
         try:
 
             print('running command:', command)
-            self.cb.camera_on()
-            time.sleep(0.2)
-            self.cb.camera_off()
+            # self.cb.camera_on()
+            # time.sleep(0.2)
+            # self.cb.camera_off()
             # while self.robot.is_moving:
             #     self.robot.stop_all_motors()
             if 'begin_explore' == command:
@@ -129,19 +129,23 @@ class CozmoReferModule(abstract.AbstractModule):
     def run_dispatcher(self):
 
          while True:
+            # print("checking queue", self.queue)
             if len(self.queue) == 0:
+                # print("empty queue")
                 time.sleep(3.0)
+                # print("running last command")
                 self.run_command(self._last_command, self._input_iu)
-                continue
-
-            input_iu = self.queue.popleft()
-            decision = input_iu.payload['decision']
-            concepts = input_iu.payload['concepts']
-            print('new decision', decision)
-            self.run_command(decision, input_iu)
+                # print("done running last command")
+            else:
+                print("extract from queue")
+                input_iu = self.queue.popleft()
+                decision = input_iu.payload['decision']
+                concepts = input_iu.payload['concepts']
+                print('new decision', decision)
+                self.run_command(decision, input_iu)
+                print("done running new decision")
 
     def process_iu(self, input_iu):
-        
         if isinstance(input_iu, DetectedObjectsIU):
             self.cb.set_current_objects(input_iu.payload)
             return None
