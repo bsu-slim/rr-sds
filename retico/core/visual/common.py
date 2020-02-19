@@ -8,6 +8,7 @@ import json
 import numpy as np
 import psutil
 from PIL import Image
+import io
 
 class ImageIU(abstract.IncrementalUnit):
     """An image incremental unit that receives raw image data from a source.
@@ -45,13 +46,13 @@ class ImageIU(abstract.IncrementalUnit):
 
     def get_json(self):
         payload = {}
-        payload['payload'] = base64.b64encode(self.payload)
+        payload['payload'] = np.array(self.payload).tolist()
         payload['nframes'] = self.nframes
         payload['rate'] = self.rate
         return payload
 
     def create_from_json(self, json_dict):
-        self.image = base64.b64decode(json_dict['payload'])
+        self.image =  Image.fromarray(np.array(json_dict['payload'], dtype='uint8'))
         self.payload = self.image
         self.nframes = json_dict['nframes']
         self.rate = json_dict['rate']
@@ -119,9 +120,6 @@ class ObjectFeaturesIU(abstract.IncrementalUnit):
         self.object_features = object_features
         self.num_objects = len(object_features)
 
-
-
-
 class ImageCropperModule(abstract.AbstractModule):
     """A module that crops images"""
 
@@ -156,9 +154,7 @@ class ImageCropperModule(abstract.AbstractModule):
         self.left = left
         self.right = right
 
-
     def process_iu(self, input_iu):
-
         image = input_iu.image
         width, height = image.size
         left = self.left if self.left != -1 else 0
