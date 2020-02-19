@@ -18,6 +18,7 @@ from matplotlib import pyplot as plt
 from PIL import Image as PImage
 import cv2
 import psutil
+import time
 
 
 class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
@@ -98,6 +99,12 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         sub = I.crop([xmin,ymin,xmax,ymax])
         sub.load()
         sub = sub.resize((self.xs,self.ys), PImage.ANTIALIAS)
+
+        print("FOUND OBJECT")
+        img_to_show = cv2.cvtColor(np.asarray(sub), cv2.COLOR_BGR2RGB) 
+        cv2.imshow('image',img_to_show) 
+        cv2.waitKey(1)
+
         # sub.show()
         img = image.img_to_array(sub)
         img = np.expand_dims(img, axis=0)
@@ -112,10 +119,9 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
 
     def process_iu(self, input_iu):
 
-        # for proc in psutil.process_iter():
-        #     if proc.name() == "display":
-        #         proc.kill()
-
+        # if(np.random.rand() < 0.5): # simply ignores half of the input ius for speed
+        #     return self.create_iu(input_iu)
+        start = time.time()
         image = input_iu.image
         detected_objects = input_iu.detected_objects
         object_features = {}
@@ -123,10 +129,11 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
             if 'object' not in obj: continue # objects are prefixed by 'object'
             obj_info = detected_objects[obj]
             sub_img = self.get_bounded_subimage(image, obj_info)
-            feats = self.get_img_features(sub_img).flatten()
+            feats = self.get_img_features(sub_img).flatten() # TODO UNHACK
             object_features[obj] = feats.tolist()
         
         output_iu = self.create_iu(input_iu)
         output_iu.set_object_features(image, object_features)
+        print("OBJECT FEATURES PROCESSING TOOK ", time.time() - start, "SECONDS")
         return output_iu
 

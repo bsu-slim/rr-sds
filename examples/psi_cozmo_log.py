@@ -34,7 +34,7 @@ from retico.modules.cozmo.cozmo_refer import CozmoReferModule
 from retico.modules.cozmo.cozmo_state import CozmoStateModule
 from retico.modules.cozmo.cozmo_camera import CozmoCameraModule
 from retico.modules.keras.object_features import KerasObjectFeatureExtractorModule
-from retico.core.audio.io import RespeakerMicrophoneModule
+# from retico.core.audio.io import RespeakerMicrophoneModule
 # from retico.modules.azure.object_detection import AzureObjectDetectionModule
 from retico.modules.google.od import MaskrRCNNObjectDetection
 from retico.interop.zeromq.io import ZeroMQWriter
@@ -75,7 +75,7 @@ def init_all(robot : cozmo.robot.Robot):
     cozmo_refer = CozmoReferModule(robot)
     cozmo_camera = CozmoCameraModule(robot)
     # cozmo_camera = WebcamModule()
-    cozmo_state = CozmoStateModule(robot)
+    # cozmo_state = CozmoStateModule(robot)
     # object_detector = AzureObjectDetectionModule(aod_key, aod_endpoint)
     object_detector = MaskrRCNNObjectDetection(mask_rcnn_labels, mask_rcnn_model)
     feature_extractor = KerasObjectFeatureExtractorModule()
@@ -97,7 +97,7 @@ def init_all(robot : cozmo.robot.Robot):
     dm.subscribe(cozmo_refer)
 
     # robot state as input
-    cozmo_state.subscribe(dm)
+    # cozmo_state.subscribe(dm)
     object_detector.subscribe(dm)
     object_detector.subscribe(cozmo_refer)
     cozmo_refer.subscribe(dm)
@@ -106,6 +106,7 @@ def init_all(robot : cozmo.robot.Robot):
     cozmo_camera.subscribe(object_detector)
     object_detector.subscribe(feature_extractor)
     feature_extractor.subscribe(wac)
+    # feature_extractor.subscribe(debug)
 
     # iasr.subscribe(iasr_psi)
     # nlu.subscribe(nlu_psi)
@@ -120,8 +121,8 @@ def init_all(robot : cozmo.robot.Robot):
     asr.run()
     iasr.run()
     dm.run()
-    cozmo_refer.run()
-    cozmo_state.run()
+    cozmo_refer.run() # IF I MAKE THIS RUN EVERYTHING SLOWS DOWN
+    # cozmo_state.run()
     cozmo_camera.run()
     object_detector.run()
     feature_extractor.run()
@@ -144,9 +145,10 @@ def init_all(robot : cozmo.robot.Robot):
     object_detector.stop()
     feature_extractor.stop()
     wac.stop()
+    debug.stop()
 
     # dm_psi.stop()
     # iasr_psi.stop()
     # nlu_psi.stop()
 
-cozmo.run_program(init_all, use_viewer=True, force_viewer_on_top=False)
+cozmo.run_program(init_all, use_viewer=True, force_viewer_on_top=False )

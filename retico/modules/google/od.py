@@ -61,13 +61,13 @@ class MaskrRCNNObjectDetection(abstract.AbstractModule):
         # print(matplotlib.get_backend())
         self.category_index = label_map_util.create_category_index_from_labelmap(labels_path, use_display_name=True)
         self.model = MaskRCNN(model_path, image_dims)
-        self.queue = deque()
+        self.queue = deque(maxlen=2)
         self.max_objs = max_objs
         self.image_dims = image_dims
         self.conf_threshold = conf_threshold
 
     def process_iu(self, input_iu):
-        self.queue.clear() # drop frames, if still waiting
+        # self.queue.clear() # drop frames, if still waiting
         self.queue.append(input_iu)
 
         return None
@@ -76,7 +76,7 @@ class MaskrRCNNObjectDetection(abstract.AbstractModule):
 
         while True:
             if len(self.queue) == 0:
-                time.sleep(0.3)
+                time.sleep(0.1)
                 continue
             
             input_iu = self.queue.popleft()
@@ -103,7 +103,6 @@ class MaskrRCNNObjectDetection(abstract.AbstractModule):
             output_iu = self.create_iu(input_iu)
             output_iu.set_detected_objects(image, returning_dictionary)
             self.append(output_iu)
-            
 
     def setup(self):
         t = threading.Thread(target=self.run_detector)

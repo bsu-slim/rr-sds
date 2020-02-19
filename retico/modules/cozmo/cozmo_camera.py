@@ -13,6 +13,8 @@ import sys
 import os
 sys.path.append(os.environ['COZMO'])
 import cozmo
+import cv2
+import time
 
 from collections import deque
 import numpy as np
@@ -42,7 +44,7 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
         self.robot.move_lift(5)
         self.exposure_amount = exposure
         self.gain_amount = gain
-        self.img_queue = deque()
+        self.img_queue = deque(maxlen=2)
         
     def process_iu(self, input_iu):
         if len(self.img_queue) > 0:
@@ -67,13 +69,23 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
         self.robot.camera.set_manual_exposure(exposure_time, actual_gain)
 
     def setup(self):
-
+        
         def handle_image(evt, obj=None, tap_count=None,  **kwargs):
             if len(self.img_queue) == 0:
                 self.img_queue.append(evt.image)
 
-        self.configure_camera()
-        self.robot.add_event_handler(cozmo.camera.EvtNewRawCameraImage, handle_image)
+        def on_cam_image(event, *, image, **kw):
+            if np.round(time.time()*10 % 3, 0) == 0.0: # Get only about a third of the frames per second
+                # print("Received cam image", event, image)
+                # cv2.imshow('rawimage',cv2.cvtColor(np.asarray(image), cv2.COLOR_BGR2RGB)) 
+                # cv2.imshow('rawimage',np.asarray(image)) 
+                # cv2.waitKey(1)
+                self.img_queue.append(image)
+
+        # self.configure_camera()
+        self.robot.camera.color_image_enabled = True
+        self.robot.world.add_event_handler(cozmo.camera.EvtNewRawCameraImage, on_cam_image)
+        # self.robot.add_event_handler(cozmo.camera.EvtNewRawCameraImage, on_cam_image)
 
 
 
