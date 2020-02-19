@@ -3,7 +3,9 @@ This module redefines the abstract classes to fit the needs of visual processing
 """
 
 from retico.core import abstract
-
+import numpy as np
+import psutil
+from PIL import Image
 
 class ImageIU(abstract.IncrementalUnit):
     """An image incremental unit that receives raw image data from a source.
@@ -100,3 +102,54 @@ class ObjectFeaturesIU(abstract.IncrementalUnit):
         self.payload = object_features
         self.object_features = object_features
         self.num_objects = len(object_features)
+
+
+
+
+class ImageCropperModule(abstract.AbstractModule):
+    """A module that crops images"""
+
+    @staticmethod
+    def name():
+        return "Image Cropper Module"
+
+    @staticmethod
+    def description():
+        return "A module that crops images"
+
+
+    @staticmethod
+    def input_ius():
+        return [ImageIU]
+
+    @staticmethod
+    def output_iu():
+        return ImageIU
+
+    def __init__(self, top=-1, bottom=-1, left=-1, right=-1, **kwargs):
+        """
+        Initialize the Webcam Module.
+        Args:
+            width (int): Width of the image captured by the webcam; will use camera default if unset
+            height (int): Height of the image captured by the webcam; will use camera default if unset
+            rate (int): The frame rate of the recording; will use camera default if unset
+        """
+        super().__init__(**kwargs)
+        self.top =  top
+        self.bottom = bottom
+        self.left = left
+        self.right = right
+
+
+    def process_iu(self, input_iu):
+
+        image = input_iu.image
+        width, height = image.size
+        left = self.left if self.left != -1 else 0
+        top = self.top if self.top != -1 else 0
+        right = self.right if self.right != -1 else width
+        bottom = self.bottom if self.bottom != -1 else height
+        image = image.crop((left, top, right, bottom)) 
+        output_iu = self.create_iu(input_iu)
+        output_iu.set_image(image, input_iu.nframes, input_iu.rate)
+        return output_iu
