@@ -1,6 +1,7 @@
 # retico
 from retico.core import abstract
 from retico.core.dialogue.common import DialogueActIU
+from retico.core.visual.common import ImageIU
 
 # zeromq & supporting libraries
 import zmq, json
@@ -96,8 +97,12 @@ class ZeroMQReader(abstract.AbstractProducingModule):
         '''
         [topic, message] = self.reader.recv_multipart()
         j = json.loads(message)
-        output_iu = self.create_iu()
-        output_iu.set_payload(j)
+        if 'image' in j:
+            output_iu = ImageIU()
+            output_iu.create_from_json(j)
+        else:
+            output_iu = self.create_iu()
+            output_iu.set_payload(j)
 
         return output_iu
 
@@ -145,17 +150,21 @@ class ZeroMQWriter(abstract.AbstractModule):
             
         """
         super().__init__(**kwargs)
-        self.topic = topic
+        self.topic = topic.encode()
         self.writer = None
 
     def process_iu(self, input_iu):
         '''
         This assumes that the message is json formatted, then packages it as payload into an IU
         '''
-        payload = {}
-        payload['message'] = json.dumps(input_iu.payload)
-        payload['originatingTime'] = datetime.datetime.now().isoformat()
-        self.writer.send_multipart([self.topic.encode(), json.dumps(payload).encode('utf-8')])
+        if isinstance(input_iu, ImageIU):
+            payload = input_iu.get_json()
+        else:
+            payload = {}
+            payload['message'] = json.dumps(input_iu.payload)
+            payload['originatingTime'] = datetime.datetime.now().isoformat()
+
+        self.writer.send_multipart([self.topic, json.dumps(payload).encode('utf-8')])
 
     def setup(self):
         self.writer = WriterSingleton.getInstance().socket

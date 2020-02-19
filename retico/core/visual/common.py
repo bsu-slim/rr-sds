@@ -3,6 +3,8 @@ This module redefines the abstract classes to fit the needs of visual processing
 """
 
 from retico.core import abstract
+import base64
+import json
 
 
 class ImageIU(abstract.IncrementalUnit):
@@ -38,6 +40,20 @@ class ImageIU(abstract.IncrementalUnit):
         self.payload = image
         self.nframes = int(nframes)
         self.rate = int(rate)
+
+    def get_json(self):
+        payload = {}
+        payload['payload'] = base64.b64encode(self.payload)
+        payload['nframes'] = self.nframes
+        payload['rate'] = self.rate
+        return payload
+
+    def create_from_json(self, json_dict):
+        self.image = base64.b64decode(json_dict['payload'])
+        self.payload = self.image
+        self.nframes = json_dict['nframes']
+        self.rate = json_dict['rate']
+
 
 class DetectedObjectsIU(abstract.IncrementalUnit):
     """An image incremental unit that maintains a list of detected objects and their bounding boxes.

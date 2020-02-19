@@ -12,8 +12,6 @@ from tensorflow.python.keras.backend import set_session
 from tensorflow.python.keras.models import load_model
 import tensorflow as tf
 
-
-
 # other
 import numpy as np
 from matplotlib import pyplot as plt
@@ -100,7 +98,7 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         sub = I.crop([xmin,ymin,xmax,ymax])
         sub.load()
         sub = sub.resize((self.xs,self.ys), PImage.ANTIALIAS)
-        sub.show()
+        # sub.show()
         img = image.img_to_array(sub)
         img = np.expand_dims(img, axis=0)
         return img
@@ -114,9 +112,9 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
 
     def process_iu(self, input_iu):
 
-        for proc in psutil.process_iter():
-            if proc.name() == "display":
-                proc.kill()
+        # for proc in psutil.process_iter():
+        #     if proc.name() == "display":
+        #         proc.kill()
 
         image = input_iu.image
         detected_objects = input_iu.detected_objects
@@ -132,8 +130,3 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         output_iu.set_object_features(image, object_features)
         return output_iu
 
-    def setup(self):
-        '''
-        for some reason we can't setup the keras model here or it gets stuck
-        '''
-        pass
