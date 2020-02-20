@@ -35,7 +35,7 @@ Because ReTiCo is handling all sorts of audio streams, you need to have `portaud
 On **Linux** this can be done via your favorite package-manager. For example:
 
 ```
-$ sudo apt-get install portaudio
+$ sudo apt-get install portaudio19-dev python-pyaudio python3-pyaudio
 ```
 
 On **MacOS** you can install it via `brew`:
