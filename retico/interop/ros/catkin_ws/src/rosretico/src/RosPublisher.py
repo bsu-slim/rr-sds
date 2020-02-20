@@ -7,7 +7,7 @@ import rospy
 import datetime
 import json
 
-class RosTopic(abstract.AbstractModule):
+class RosPublisher(abstract.AbstractModule):
     """A ROS Writer Node
 
     Note: If you are using this to pass IU payloads to PSI, make sure you're passing JSON-formatable stuff (i.e., dicts not tuples)
@@ -32,22 +32,27 @@ class RosTopic(abstract.AbstractModule):
     def input_ius():
         return [abstract.IncrementalUnit] 
 
-    def __init__(self, topic, **kwargs):
+    def __init__(self, topic, debug = False, **kwargs):
         """Initializes the Ros writer.
 
         Args: topic(str): the topic/scope where the information will be read.
             
         """
         super().__init__(**kwargs)
+        self.debug = debug
+
         self.publisher = rospy.Publisher(str(topic), String, queue_size=10)
-        self.subscriber = rospy.Subscriber(str(topic), String, self.callback)
-        rospy.loginfo('Created publisher on topic ' + str(topic))
+
+        if(self.debug):
+            rospy.loginfo('Created publisher on topic ' + str(topic))
 
     def process_iu(self, input_iu):
-        self.publisher.publish(input_iu.payload)
+        self.publisher.publish(str(input_iu.payload))
+        if(self.debug):
+            rospy.loginfo('publishing data: ' + str(input_iu.payload))
 
     def callback(self, data):
-        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
+        pass
 
     def setup(self):
         pass

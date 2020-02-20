@@ -15,7 +15,8 @@ from retico.modules.azure.asr import AzureASRModule
 from retico.core.text.asr import IncrementalizeASRModule
 from retico.modules.azure.emotion_recognition import AzureEmotionDetectionModule
 from retico.interop.ros.catkin_ws.src.rosretico.src.RosNode import RosNode
-from retico.interop.ros.catkin_ws.src.rosretico.src.RosTopic import RosTopic
+from retico.interop.ros.catkin_ws.src.rosretico.src.RosPublisher import RosPublisher
+from retico.interop.ros.catkin_ws.src.rosretico.src.RosSubscriber import RosSubscriber
 
 # how to restart an utterance?
 # had to change is_running to _is_running because opendial modules have an is_running() method
@@ -35,33 +36,36 @@ iasr = IncrementalizeASRModule()
 
 #initialize ros and its topics
 rosnode = RosNode()
-mic_topic = RosTopic('mic')
-asr_topic = RosTopic('asr')
+mic_publisher = RosPublisher('mic')
+asr_publisher = RosPublisher('asr')
+asr_subscriber = RosSubscriber('asr',debug=True)
 
-debug = DebugModule()
+# debug = DebugModule()
 
 # hook modules up to each other
 mic.subscribe(asr)
-mic.subscribe(mic_topic)
+mic.subscribe(mic_publisher)
 asr.subscribe(iasr)
-asr.subscribe(asr_topic)
-iasr.subscribe(debug)
+iasr.subscribe(asr_publisher)
+# iasr.subscribe(debug)
 
 # initialize modules
 rosnode.run()
 mic.run()
-mic_topic.run()
+mic_publisher.run()
 asr.run()
-asr_topic.run()
+asr_publisher.run()
+asr_subscriber.run()
 iasr.run()
-debug.run()
+# debug.run()
 
 input() # keep things running
 
 rosnode.stop()
 mic.stop()
-mic_topic.stop()
+mic_publisher.stop()
 asr.stop()
-asr_topic.stop()
+asr_publisher.stop()
+asr_subscriber.stop()
 iasr.stop()
-debug.stop()
+# debug.stop()
