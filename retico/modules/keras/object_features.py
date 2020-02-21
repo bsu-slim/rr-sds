@@ -100,7 +100,7 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         sub.load()
         sub = sub.resize((self.xs,self.ys), PImage.ANTIALIAS)
 
-        print("FOUND OBJECT")
+        # print("FOUND OBJECT")
         img_to_show = cv2.cvtColor(np.asarray(sub), cv2.COLOR_BGR2RGB) 
         cv2.imshow('image',img_to_show) 
         cv2.waitKey(1)
@@ -134,6 +134,6 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         
         output_iu = self.create_iu(input_iu)
         output_iu.set_object_features(image, object_features)
-        print("OBJECT FEATURES PROCESSING TOOK ", time.time() - start, "SECONDS")
+        # print("OBJECT FEATURES PROCESSING TOOK ", time.time() - start, "SECONDS")
         return output_iu
 

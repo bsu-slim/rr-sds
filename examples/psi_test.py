@@ -104,11 +104,11 @@ feature_extractor.subscribe(wac)
 
 print('All modules subscribed.')
 
-object_detector.subscribe(psi)
-feature_extractor.subscribe(psi)
+# object_detector.subscribe(psi)
+# feature_extractor.subscribe(psi)
 iasr.subscribe(psi)
-wac.subscribe(psi)
-dm.subscribe(psi)
+# wac.subscribe(psi)
+# dm.subscribe(psi)
 # feat_ext.subscribe(feat_ext_psi)
 # obj_det.subscribe(obj_det_psi)
 

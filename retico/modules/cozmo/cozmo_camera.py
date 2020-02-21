@@ -38,7 +38,7 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
     def output_iu():
         return ImageIU
 
-    def __init__(self, robot, exposure=0.05, gain=0.8, **kwargs):
+    def __init__(self, robot, exposure=0.75, gain=0.5, **kwargs):
         super().__init__(**kwargs)
         self.robot = robot
         self.robot.move_lift(5)
@@ -58,6 +58,7 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
 
     def configure_camera(self):
         self.robot.camera.color_image_enabled = True
+        self.robot.camera.enable_auto_exposure = False
         # Lerp exposure between min and max times
         min_exposure = self.robot.camera.config.min_exposure_time_ms
         max_exposure = self.robot.camera.config.max_exposure_time_ms
@@ -66,7 +67,8 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
         min_gain = self.robot.camera.config.min_gain
         max_gain = self.robot.camera.config.max_gain
         actual_gain = (1-self.gain_amount)*min_gain + self.gain_amount*max_gain
-        self.robot.camera.set_manual_exposure(exposure_time, actual_gain)
+        self.robot.camera.set_manual_exposure(exposure_time,actual_gain)
+
 
     def setup(self):
         
@@ -82,8 +84,8 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
                 # cv2.waitKey(1)
                 self.img_queue.append(image)
 
-        # self.configure_camera()
-        self.robot.camera.color_image_enabled = True
+        self.configure_camera()
+        # self.robot.camera.color_image_enabled = True
         self.robot.world.add_event_handler(cozmo.camera.EvtNewRawCameraImage, on_cam_image)
         # self.robot.add_event_handler(cozmo.camera.EvtNewRawCameraImage, on_cam_image)
 

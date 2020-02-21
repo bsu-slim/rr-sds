@@ -13,7 +13,7 @@ from keras.callbacks import EarlyStopping
 from tqdm import tqdm
 from operator import itemgetter 
 from sklearn.model_selection import train_test_split
-
+import random
 import logging
 
 layer = 'probs'
@@ -33,7 +33,7 @@ NODE_DTYPE = np.dtype({
 
 class WAC:
     
-    def __init__(self,wac_dir,compose_method='prod'):
+    def __init__(self,wac_dir,classifier_spec=(linear_model.LogisticRegression,{'penalty':'l2'}),compose_method='prod'):
         '''
         wac_dir: name of model for persistance and loading
         compose_method: prod, avg, sum
@@ -45,13 +45,15 @@ class WAC:
         load() model, then call add_increment for each word in an utterance. Call new_utt() to start a new utterance. 
         '''
         self.wac = {}
+        self.trained_wac = {}
         self.model_name=wac_dir
         self.current_utt = {}
         self.utt_words = []
         self.compose_method = compose_method
+        self.classifier_spec = classifier_spec
         
     def vocab(self):
-        return self.wac.keys()
+        return self.trained_wac.keys()
     
     def add_observation(self, word, features, label):
         if word not in self.wac: self.wac[word] = list()
@@ -60,14 +62,45 @@ class WAC:
     def add_multiple_observations(self, word, features, labels):
         for f,p in zip(features,labels):
             self.add_observation(word, f, p)
+
+    def create_negatives(self, num_negs=3):
+        if len(self.wac) <= 1: return # need at least two words to find negs
+        for word in self.wac:
+            negs = []
+            max_len = len(self.wac[word]) * num_negs
+            while len(negs) < max_len:
+                for iword in self.wac:
+                    if iword == word: continue
+                    i = random.sample(self.wac[iword],1)[0]
+                    negs.append(i[0])
+            for i in negs:
+                self.add_observation(word, i, 0)
+
+    def train(self, min_obs=4):
+        classifier, classf_params = self.classifier_spec
+        nwac = {}
+        if len(self.wac) <= 1: return
+        for word in self.wac:
+            if len(self.wac[word]) < min_obs: continue
+            this_classf = classifier(**classf_params)
+            X,y = zip(*self.wac[word])
+            this_classf.fit(X,y)
+            nwac[word] = this_classf
+        self.trained_wac = nwac
     
     def load_model(self):
-        self.wac = {}
+        self.trained_wac = {}
         existing = [f.split('.')[0] for f in os.listdir(self.model_name)]
         print('loading WAC model')
         for item in tqdm(existing):
             with open('{}/{}.pkl'.format(self.model_name, item), 'rb') as handle:
-                self.wac[item] = pickle.load(handle)
+                self.trained_wac[item] = pickle.load(handle)
+
+    def persist_model(self):
+        if len(self.trained_wac) == 0: return
+        for word in self.trained_wac:
+            with open('{}.pkl'.format(word), 'wb') as handle:
+                pickle.dump(self.trained_wac[word],handle, protocol=pickle.HIGHEST_PROTOCOL)
  
     def get_current_prediction_state(self):
         return self.current_utt
@@ -81,7 +114,7 @@ class WAC:
         return self.compose(predictions)
 
     def best_word(self, context):
-        probs = [(word, self.proba(word, context)) for word in self.wac]
+        probs = [(word, self.proba(word, context)) for word in self.trained_wac]
         res = max(probs, key = itemgetter(1))
         return res
 
@@ -92,8 +125,8 @@ class WAC:
 
     def proba(self, word, context):
         intents,feats = context
-        if word not in self.wac: return None # todo: return a distribution of all zeros?
-        predictions = list(zip(intents,self.wac[word].predict_proba(np.array(feats))[:,1]))
+        if word not in self.trained_wac: return None # todo: return a distribution of all zeros?
+        predictions = list(zip(intents,self.trained_wac[word].predict_proba(np.array(feats))[:,1]))
         return predictions
     
     def new_utt(self):
