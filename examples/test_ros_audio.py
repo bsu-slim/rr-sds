@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import warnings
+import rospy
 
 warnings.filterwarnings('ignore')
 # export LD_LIBRARY_PATH=/home/casey/anaconda3/envs/py-opendial/lib/python3.6/site-packages/torch/lib/:$LD_LIBRARY_PATH
@@ -35,37 +36,37 @@ emotion = AzureEmotionDetectionModule(aed_key, aed_endpoint)
 iasr = IncrementalizeASRModule()
 
 #initialize ros and its topics
-rosnode = RosNode()
+rospy.init_node("Robot_Ready_SDS_RosNode", anonymous=True)
 mic_publisher = RosPublisher('mic')
 asr_publisher = RosPublisher('asr')
-asr_subscriber = RosSubscriber('asr',debug=True)
+# asr_subscriber = RosSubscriber('asr',debug=True)
 
-# debug = DebugModule()
+debug = DebugModule()
 
 # hook modules up to each other
 mic.subscribe(asr)
 mic.subscribe(mic_publisher)
 asr.subscribe(iasr)
 iasr.subscribe(asr_publisher)
-# iasr.subscribe(debug)
+iasr.subscribe(debug)
 
 # initialize modules
-rosnode.run()
+# rosnode.run()
 mic.run()
 mic_publisher.run()
 asr.run()
 asr_publisher.run()
-asr_subscriber.run()
+# asr_subscriber.run()
 iasr.run()
-# debug.run()
+debug.run()
 
 input() # keep things running
 
-rosnode.stop()
+# rosnode.stop()
 mic.stop()
 mic_publisher.stop()
 asr.stop()
 asr_publisher.stop()
-asr_subscriber.stop()
+# asr_subscriber.stop()
 iasr.stop()
-# debug.stop()
+debug.stop()

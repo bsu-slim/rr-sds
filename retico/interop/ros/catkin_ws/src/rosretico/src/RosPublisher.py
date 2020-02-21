@@ -30,7 +30,7 @@ class RosPublisher(abstract.AbstractModule):
     def input_ius():
         return [abstract.IncrementalUnit] 
 
-    def __init__(self, topic, debug = False, **kwargs):
+    def __init__(self, topic, debug = False, message_type = String,**kwargs):
         """Initializes the Ros publisher.
 
         Args: topic(str): the topic/scope where the information will be published to.
@@ -39,7 +39,7 @@ class RosPublisher(abstract.AbstractModule):
         super().__init__(**kwargs)
         self.debug = debug
 
-        self.publisher = rospy.Publisher(str(topic), String, queue_size=10)
+        self.publisher = rospy.Publisher(str(topic), message_type, queue_size=10)
 
         if(self.debug):
             rospy.loginfo('Created publisher on topic ' + str(topic))
