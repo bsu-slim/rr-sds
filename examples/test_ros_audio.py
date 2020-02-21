@@ -15,7 +15,6 @@ from retico.modules.google.asr import GoogleASRModule
 from retico.modules.azure.asr import AzureASRModule
 from retico.core.text.asr import IncrementalizeASRModule
 from retico.modules.azure.emotion_recognition import AzureEmotionDetectionModule
-from retico.interop.ros.catkin_ws.src.rosretico.src.RosNode import RosNode
 from retico.interop.ros.catkin_ws.src.rosretico.src.RosPublisher import RosPublisher
 from retico.interop.ros.catkin_ws.src.rosretico.src.RosSubscriber import RosSubscriber
 
@@ -51,7 +50,6 @@ iasr.subscribe(asr_publisher)
 iasr.subscribe(debug)
 
 # initialize modules
-# rosnode.run()
 mic.run()
 mic_publisher.run()
 asr.run()
