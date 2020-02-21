@@ -89,6 +89,19 @@ For installing Rasa NLU, just install it via:
 $ pip install rasa_nlu
 ```
 
+### ROS
+
+Be sure to follow all installation instructions at http://wiki.ros.org/ROS/Installation.
+
+ros can be used in conjunction with retico utilizing the ros python client library
+
+```bash
+$ pip install rospy
+```
+
+You will have to be able to use ros tools in order to run the examples which can be found
+in ./examples/test_audio_ros.py as well as ./examples/Turtlesim_Teleop.py
+
 ## Installing Retico
 
 To setup retico you can just run
