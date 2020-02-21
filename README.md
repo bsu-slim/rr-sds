@@ -90,6 +90,7 @@ $ pip install rasa_nlu
 ```
 
 ### ROS
+Retico modules can make use of interop communications using ROS
 
 Be sure to follow all installation instructions at http://wiki.ros.org/ROS/Installation.
 
