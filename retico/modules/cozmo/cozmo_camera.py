@@ -18,6 +18,7 @@ import time
 
 from collections import deque
 import numpy as np
+from PIL import Image
 
 
 
@@ -38,7 +39,7 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
     def output_iu():
         return ImageIU
 
-    def __init__(self, robot, exposure=0.05, gain=0.8, **kwargs):
+    def __init__(self, robot, exposure=0.1, gain=1.0, **kwargs):
         super().__init__(**kwargs)
         self.robot = robot
         self.robot.move_lift(5)
@@ -77,9 +78,8 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
         def on_cam_image(event, *, image, **kw):
             if np.round(time.time()*10 % 3, 0) == 0.0: # Get only about a third of the frames per second
                 # print("Received cam image", event, image)
-                # cv2.imshow('rawimage',cv2.cvtColor(np.asarray(image), cv2.COLOR_BGR2RGB)) 
-                # cv2.imshow('rawimage',np.asarray(image)) 
-                # cv2.waitKey(1)
+                # color_correction = cv2.cvtColor(np.asarray(image), cv2.COLOR_BGR2RGB)
+                # self.img_queue.append(Image.fromarray(color_correction))
                 self.img_queue.append(image)
 
         # self.configure_camera()

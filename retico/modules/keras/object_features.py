@@ -101,7 +101,7 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         sub = sub.resize((self.xs,self.ys), PImage.ANTIALIAS)
 
         print("FOUND OBJECT")
-        img_to_show = cv2.cvtColor(np.asarray(sub), cv2.COLOR_BGR2RGB) 
+        img_to_show = np.asarray(sub)
         cv2.imshow('image',img_to_show) 
         cv2.waitKey(1)
 
