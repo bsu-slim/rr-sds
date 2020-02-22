@@ -12,6 +12,7 @@ import os
 import os.path as osp
 from tqdm import tqdm
 import sys
+import threading
 
 
 class WordsAsClassifiersModule(abstract.AbstractModule):
@@ -47,15 +48,15 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
         self.wac = WAC(wac_dir)
         self.word_buffer = None
         self.itts = 0
-        self.train_mode = True
+        self.train_mode = False
 
     def process_iu(self, input_iu):
 
         frame = {}
         if isinstance(input_iu, SpeechRecognitionIU):
             self.word_buffer = input_iu.get_text().lower().split()[0]
-            print(self.word_buffer)
-            # frame['word_to_find'] = self.word_buffer
+            if not self.train_mode:
+                frame['word_to_find'] = self.word_buffer
         
         # when new objects are observed (i.e., not SpeechRecognitionIUs)
         if isinstance(input_iu, ObjectFeaturesIU):
@@ -84,7 +85,7 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
                         self.wac.train()
                         print('persisting')
                         self.wac.persist_model()
-            
+
             
             if self.word_buffer is not None:
                 target = self.wac.best_object(self.word_buffer, (intents, features))

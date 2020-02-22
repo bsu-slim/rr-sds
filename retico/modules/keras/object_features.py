@@ -14,11 +14,13 @@ import tensorflow as tf
 
 # other
 import numpy as np
+from collections import deque
 from matplotlib import pyplot as plt
 from PIL import Image as PImage
 import cv2
 import psutil
 import time
+import threading
 
 
 class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
@@ -55,6 +57,7 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         self.session = tf.Session(graph=tf.Graph())
         self.pre_input = None
         self.img_dims = img_dims
+        self.queue = deque(maxlen=1)
         with self.session.graph.as_default():
             set_session(self.session)
 
@@ -118,22 +121,36 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
             return yhat
 
     def process_iu(self, input_iu):
+        self.queue.append(input_iu)
+        return None
+
+    def run_extractor(self):
 
         # if(np.random.rand() < 0.5): # simply ignores half of the input ius for speed
         #     return self.create_iu(input_iu)
-        start = time.time()
-        image = input_iu.image
-        detected_objects = input_iu.detected_objects
-        object_features = {}
-        for obj in detected_objects:
-            if 'object' not in obj: continue # objects are prefixed by 'object'
-            obj_info = detected_objects[obj]
-            sub_img = self.get_bounded_subimage(image, obj_info)
-            feats = self.get_img_features(sub_img).flatten() # TODO UNHACK
-            object_features[obj] = feats.tolist()
-        
-        output_iu = self.create_iu(input_iu)
-        output_iu.set_object_features(image, object_features)
-        # print("OBJECT FEATURES PROCESSING TOOK ", time.time() - start, "SECONDS")
-        return output_iu
+         while True:
+            if len(self.queue) == 0:
+                time.sleep(0.5)
+                continue
+            
+            input_iu = self.queue.popleft()
+            start = time.time()
+            image = input_iu.image
+            detected_objects = input_iu.detected_objects
+            object_features = {}
+            for obj in detected_objects:
+                if 'object' not in obj: continue # objects are prefixed by 'object'
+                obj_info = detected_objects[obj]
+                sub_img = self.get_bounded_subimage(image, obj_info)
+                feats = self.get_img_features(sub_img).flatten() # TODO UNHACK
+                object_features[obj] = feats.tolist()
+            
+            output_iu = self.create_iu(input_iu)
+            output_iu.set_object_features(image, object_features)
+            # print("OBJECT FEATURES PROCESSING TOOK ", time.time() - start, "SECONDS")
+            self.append(output_iu)
+
+    def setup(self):
+        t = threading.Thread(target=self.run_extractor)
+        t.start()    
 

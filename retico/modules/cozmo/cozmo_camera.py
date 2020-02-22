@@ -40,12 +40,13 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
         return ImageIU
 
     def __init__(self, robot, exposure=0.05, gain=0.05, **kwargs):
+        # for exp room:exposure=0.05, gain=0.05
         super().__init__(**kwargs)
         self.robot = robot
         self.robot.move_lift(5)
         self.exposure_amount = exposure
         self.gain_amount = gain
-        self.img_queue = deque(maxlen=2)
+        self.img_queue = deque(maxlen=1)
         
     def process_iu(self, input_iu):
         if len(self.img_queue) > 0:
@@ -73,18 +74,10 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
     def setup(self):
         
         def handle_image(evt, obj=None, tap_count=None,  **kwargs):
-            if len(self.img_queue) == 0:
-                self.img_queue.append(evt.image)
-
-        def on_cam_image(event, *, image, **kw):
-            if np.round(time.time()*10 % 3, 0) == 0.0: # Get only about a third of the frames per second
-                # print("Received cam image", event, image)
-                # color_correction = cv2.cvtColor(np.asarray(image), cv2.COLOR_BGR2RGB)
-                # self.img_queue.append(Image.fromarray(color_correction))
-                self.img_queue.append(image)
+            self.img_queue.append(evt.image)
 
         self.configure_camera()
-        self.robot.world.add_event_handler(cozmo.camera.EvtNewRawCameraImage, on_cam_image)
+        self.robot.world.add_event_handler(cozmo.camera.EvtNewRawCameraImage, handle_image)
 
 
 

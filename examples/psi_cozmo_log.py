@@ -6,7 +6,7 @@ import os
 import sys
 
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-ca5bdacf1d9a.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-78e88daf614b.json'
 os.environ['PYOD'] = '/home/casey/git/PyOpenDial'
 os.environ['RASA'] = "/home/casey/git/rasa_nlu"
 os.environ['COZMO'] = "/home/casey/git/cozmo-python-sdk/src"
@@ -27,7 +27,7 @@ from retico.core.audio.io import MicrophoneModule
 from retico.core.debug.console import DebugModule
 from retico.core.audio.io import StreamingSpeakerModule
 from retico.modules.google.asr import GoogleASRModule
-from retico.modules.rasa.nlu import RasaNLUModule
+# from retico.modules.rasa.nlu import RasaNLUModule
 from retico.modules.opendial.dm import OpenDialModule
 from retico.core.text.asr import IncrementalizeASRModule
 from retico.modules.cozmo.cozmo_refer import CozmoReferModule
@@ -84,8 +84,8 @@ def init_all(robot : cozmo.robot.Robot):
 
     # psi related modules
     # WriterSingleton should use the *source* ip address (i.e., this machine's)
-    WriterSingleton(ip='192.168.0.101', port='12346') # create the zeromq writer
-    psi = ZeroMQWriter(topic='retico')
+    # WriterSingleton(ip='192.168.0.101', port='12346') # create the zeromq writer
+    # psi = ZeroMQWriter(topic='retico')
    
     # mic as input
     mic.subscribe(asr)
@@ -106,11 +106,11 @@ def init_all(robot : cozmo.robot.Robot):
     feature_extractor.subscribe(wac)
     # feature_extractor.subscribe(debug)
 
-    iasr.subscribe(psi)
-    wac.subscribe(psi)
-    dm.subscribe(psi)
-    feature_extractor.subscribe(psi)
-    object_detector.subscribe(psi)
+    # iasr.subscribe(psi)
+    # wac.subscribe(psi)
+    # dm.subscribe(psi)
+    # feature_extractor.subscribe(psi)
+    # object_detector.subscribe(psi)
 
     #
     # INITIALIZE MODULES
@@ -126,7 +126,7 @@ def init_all(robot : cozmo.robot.Robot):
     feature_extractor.run()
     wac.run()
     debug.run()
-    psi.run()
+    # psi.run()
 
     input() # keep everything running
 
@@ -134,7 +134,7 @@ def init_all(robot : cozmo.robot.Robot):
     asr.stop()
     iasr.stop()
     cozmo_refer.stop()
-    cozmo_state.stop()
+    # cozmo_state.stop()
     dm.stop()
     cozmo_camera.stop()
     object_detector.stop()
