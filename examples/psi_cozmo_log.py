@@ -96,6 +96,7 @@ def init_all(robot : cozmo.robot.Robot):
 
     # robot state as input
     # cozmo_state.subscribe(dm)
+    wac.subscribe(cozmo_refer)
     object_detector.subscribe(dm)
     object_detector.subscribe(cozmo_refer)
     cozmo_refer.subscribe(dm)

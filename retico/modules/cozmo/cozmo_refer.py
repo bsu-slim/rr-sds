@@ -12,6 +12,7 @@ from retico.core.dialogue.common import DialogueDecisionIU
 from retico.core.dialogue.common import GenericDictIU
 from retico.modules.cozmo.cozmo_behaviors import CozmoBehaviors
 from retico.core.visual.common import DetectedObjectsIU
+from retico.modules.slim.common import GroundedFrameIU
 
 # cozmo
 import sys
@@ -33,7 +34,7 @@ class CozmoReferModule(abstract.AbstractModule):
 
     @staticmethod
     def input_ius():
-        return [DialogueDecisionIU,DetectedObjectsIU]
+        return [DialogueDecisionIU,DetectedObjectsIU,GroundedFrameIU]
 
     @staticmethod
     def output_iu():
@@ -48,6 +49,7 @@ class CozmoReferModule(abstract.AbstractModule):
         self._input_iu = None
         self._current_word = None
         self.current_objects = None
+        self.best_known_word = None
         self.cb = CozmoBehaviors(robot)
         self.queue = deque(maxlen=3)
         t = threading.Thread(target=self.run_dispatcher)
@@ -104,15 +106,19 @@ class CozmoReferModule(abstract.AbstractModule):
                 self.update_dialogue_state('aligned', False)
                 self.update_dialogue_state('near_object', False)
 
-                if confidence > 0.5:
+                print(self._current_word, self.best_known_word)
+
+                if self._current_word == self.best_known_word:
                     self.cb.say(self._current_word)
+                    time.sleep(1.0)
                     self.cb.indicate_object()
+                    self._last_command = None
                     self.update_dialogue_state('word_to_find', None)
                     self.update_dialogue_state('exploring', False)
                 else:
                     self.cb.start_position()
                     w = random.choice(['hmmm', 'uhh', 'that'])
-                    self.cb.say("{} not {}".format(w, self._current_word))
+                    self.cb.say("{} not {}, that's {}".format(w, self._current_word, self.best_known_word))
                     self.cb.back_up()
                     self._last_command = 'begin_explore'
                     self.update_dialogue_state('begin_explore', True)
@@ -148,6 +154,12 @@ class CozmoReferModule(abstract.AbstractModule):
                 print("done running new decision")
 
     def process_iu(self, input_iu):
+
+        if isinstance(input_iu, GroundedFrameIU):
+            if 'best_known_word' in input_iu.payload:
+                self.best_known_word = input_iu.payload['best_known_word']
+            return None
+            
         if isinstance(input_iu, DetectedObjectsIU):
             self.cb.set_current_objects(input_iu.payload)
             return None

@@ -6,7 +6,7 @@ import os
 import sys
 
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-ca5bdacf1d9a.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS']='/home/casey/substutute-78e88daf614b.json'
 os.environ['PYOD'] = '/home/casey/git/PyOpenDial'
 os.environ['TF_RESEARCH'] = '/home/casey/git/tfmodels/research'
 os.environ['TF_SLIM'] = '/home/casey/git/tfmodels/research/slim'
@@ -43,7 +43,7 @@ aod_key = "59bfd2dc248a4d08957edf7a6eb6331f"
 wac_dir = '/home/casey/git/retico/data/wac/subset'
 mask_rcnn_labels = '/home/casey/git/retico/data/maskrcnn/label_map.pbtxt'
 mask_rcnn_model = '/home/casey/git/retico/data/maskrcnn/frozen_inference_graph.pb'
-misty_ip = '10.10.0.7'
+misty_ip = '192.168.0.15'
 
 opendial_variables = ['face_count', # 
                         'num_objs', # ObjectDetector
@@ -90,6 +90,7 @@ iasr.subscribe(wac)
 wac.subscribe(dm)
 
 # robot state as input
+wac.subscribe(misty_refer)
 misty_state.subscribe(misty_refer)
 dm.subscribe(misty_refer)
 misty_refer.subscribe(dm)

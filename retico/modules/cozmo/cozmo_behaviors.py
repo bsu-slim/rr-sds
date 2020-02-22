@@ -17,8 +17,8 @@ class CozmoBehaviors():
         self.robot = robot
         self.objects = None
         # self.robot.set_robot_volume(0.25)
-        self.pivot_wheel = [25,-25, 40,-40]
-        self.turn_wheel = [30, 40, 50, -30, -40, -15]
+        self.pivot_wheel = [10,-10, 20,-20]
+        self.turn_wheel = [10, 20, 30, -35, -25, -15]
         self.durations = [1,2,3,4,5]
         self.top_object = None
         self.start_position()
@@ -42,11 +42,13 @@ class CozmoBehaviors():
         self.robot.say_text(text, in_parallel=True)
 
     def camera_on(self):
-        self.robot.camera.image_stream_enabled = True
-        self.robot.camera.color_image_enabled = False
+        pass
+        # self.robot.camera.image_stream_enabled = True
+        # self.robot.camera.color_image_enabled = True
 
     def camera_off(self):
-        self.robot.camera.image_stream_enabled = False
+        #self.robot.camera.image_stream_enabled = False
+        pass
 
 
     def back_up(self):

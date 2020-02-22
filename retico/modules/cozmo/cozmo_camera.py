@@ -39,7 +39,7 @@ class CozmoCameraModule(abstract.AbstractProducingModule):
     def output_iu():
         return ImageIU
 
-    def __init__(self, robot, exposure=0.05, gain=0.05, **kwargs):
+    def __init__(self, robot, exposure=0.05, gain=0.1, **kwargs):
         # for exp room:exposure=0.05, gain=0.05
         super().__init__(**kwargs)
         self.robot = robot
