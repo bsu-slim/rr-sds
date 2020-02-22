@@ -23,12 +23,28 @@ class Robot:
         self.backpack_instance = None
         self.time_of_flight_instance = [None]*4
         self.face_recognition_instance = None
-
+        self.trying_to_align = False
         self.available_subscriptions = ["SerialMessage", "TimeOfFlight","FaceRecognition","LocomotionCommand","HaltCommand","SelfState","WorldState"]
-
+        self.start_small_random_movements()
         #self.populateImages()
         #self.populateAudio()
         #self.populateLearnedFaces()
+
+    def start_small_random_movements(self):
+
+        def inner():
+            while True:
+                if self.trying_to_align:
+                    time.sleep(3.0)
+                    continue
+                d = choice([30,40,-30,-40])
+                t = choice([100,200,250])
+                self.drive_time(d,d,t)
+                w = choice([1,2,3,4])
+                time.sleep(w)
+
+        t = threading.Thread(target=inner)
+        t.start()    
 
     def change_LED(self,red,green,blue):
         assert red in range(0,256) and blue in range(0,256) and green in range(0,256), " changeLED: The colors need to be in 0-255 range"

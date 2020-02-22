@@ -11,6 +11,7 @@ from retico.core import abstract
 from retico.core.dialogue.common import DialogueDecisionIU
 from retico.core.visual.common import DetectedObjectsIU
 from retico.core.dialogue.common import GenericDictIU
+from retico.modules.slim.common import GroundedFrameIU
 from retico.core.robot.common import RobotStateIU
 
 # misty
@@ -30,7 +31,7 @@ class MistyReferModule(abstract.AbstractModule):
 
     @staticmethod
     def input_ius():
-        return [RobotStateIU,DialogueDecisionIU,DetectedObjectsIU]
+        return [RobotStateIU,DialogueDecisionIU,DetectedObjectsIU,GroundedFrameIU]
 
     @staticmethod
     def output_iu():
@@ -44,6 +45,7 @@ class MistyReferModule(abstract.AbstractModule):
         self._current_word = None
         self.current_state = {}
         self.current_objects = None
+        self.best_known_word = None
         self.queue = deque()
         t = threading.Thread(target=self.run_dispatcher)
         t.start()
@@ -84,6 +86,7 @@ class MistyReferModule(abstract.AbstractModule):
         self._input_iu = input_iu
 
         print('running command:', command)
+        
         time.sleep(0.2)
         current_pitch = self.current_state['Actuator_HeadPitch'] if 'Actuator_HeadPitch' in self.current_state else 0.0
         current_yaw = self.current_state['Actuator_HeadYaw'] if 'Actuator_HeadYaw' in self.current_state else 0.0
@@ -96,10 +99,12 @@ class MistyReferModule(abstract.AbstractModule):
             if new_yaw is None: 
                 self.set_start_position()
                 return
+            self.robot.stop()
             self.robot.move_head(current_roll, new_pitch, new_yaw)
             time.sleep(3)
 
         if 'align_to_object' == command:
+            self.robot.trying_to_align = True
             if 'object0' in self.current_objects:
                 top_object = self.current_objects['object0']
             for _ in range(3):
@@ -113,26 +118,26 @@ class MistyReferModule(abstract.AbstractModule):
 
         if 'check_confidence' == command:
 
-            print(self._current_word, confidence)
+            print(self._current_word, self.best_known_word)
 
-            if confidence > 0.5:
+            if self._current_word == self.best_known_word:
                 self.update_dialogue_state('word_to_find', 'None')
                 # say word
                 # indicate object
-                self.robot.move_arm('right', -25)
+                self.robot.move_arm('right', -30)
                 time.sleep(2)
                 self.set_start_position()
 
             else:
                 # say "not x"
                 #self.cb.say("{} not {}".format(w, self._current_word))
-                self.robot.move_arm('left', -25)
+                self.robot.move_arm('left', -30)
                 time.sleep(2)
                 new_yaw = self.get_next_yaw()
                 if new_yaw is None:
                     self.set_start_position()
-                    self._last_command = None
-                    return
+                else:
+                    self.robot.move_head(current_roll, current_pitch, new_yaw)
                 self.update_dialogue_state('aligned', False)
                 
                 # self.update_dialogue_state('begin_explore', True)
@@ -144,6 +149,11 @@ class MistyReferModule(abstract.AbstractModule):
 
 
     def process_iu(self, input_iu):
+
+        if isinstance(input_iu, GroundedFrameIU):
+            if 'best_known_word' in input_iu.payload:
+                self.best_known_word = input_iu.payload['best_known_word']
+            return None
         
         if isinstance(input_iu, DetectedObjectsIU):
             self.current_objects = input_iu.payload
@@ -171,11 +181,11 @@ class MistyReferModule(abstract.AbstractModule):
             input_iu = self.queue.popleft()
             decision = input_iu.payload['decision']
             concepts = input_iu.payload['concepts']
-            print('new decision', decision)
             self.run_command(decision, input_iu)        
 
     def set_start_position(self):
-        self._to_check = [-50,50]
+        self.robot.trying_to_align = False
+        self._to_check = [-50,-40,40,50]
         random.shuffle(self._to_check)
         self._last_command = None
         self.update_dialogue_state('word_to_find', 'None')
