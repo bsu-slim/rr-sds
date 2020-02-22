@@ -43,7 +43,7 @@ class CozmoBehaviors():
 
     def camera_on(self):
         self.robot.camera.image_stream_enabled = True
-        self.robot.camera.color_image_enabled = True
+        self.robot.camera.color_image_enabled = False
 
     def camera_off(self):
         self.robot.camera.image_stream_enabled = False

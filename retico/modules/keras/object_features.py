@@ -43,11 +43,11 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
     def output_iu():
         return ObjectFeaturesIU
 
-    def __init__(self, model_type='vgg19', layer='fc2', weights='imagenet', img_dims=(320,240), **kwargs):
+    def __init__(self, model_type='vgg19', layer='fc1', weights='imagenet', img_dims=(320,240), **kwargs):
         """Initializes the object feature detector module
         efficientnet/probs
         Args:
-
+        vgg19:fc2
         """
         super().__init__(**kwargs)
         self.weights = weights
@@ -100,9 +100,9 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         sub.load()
         sub = sub.resize((self.xs,self.ys), PImage.ANTIALIAS)
 
-        print("FOUND OBJECT")
+        # print("FOUND OBJECT")
         img_to_show = np.asarray(sub)
-        cv2.imshow('image',img_to_show) 
+        cv2.imshow('image',cv2.cvtColor(img_to_show, cv2.COLOR_RGB2BGR)) 
         cv2.waitKey(1)
 
         # sub.show()
@@ -134,6 +134,6 @@ class KerasObjectFeatureExtractorModule(abstract.AbstractModule):
         
         output_iu = self.create_iu(input_iu)
         output_iu.set_object_features(image, object_features)
-        print("OBJECT FEATURES PROCESSING TOOK ", time.time() - start, "SECONDS")
+        # print("OBJECT FEATURES PROCESSING TOOK ", time.time() - start, "SECONDS")
         return output_iu
 

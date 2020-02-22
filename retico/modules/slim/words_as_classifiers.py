@@ -46,13 +46,15 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
         super().__init__(**kwargs)
         self.wac = WAC(wac_dir)
         self.word_buffer = None
+        self.itts = 0
 
     def process_iu(self, input_iu):
 
         frame = {}
         if isinstance(input_iu, SpeechRecognitionIU):
             self.word_buffer = input_iu.get_text().lower().split()[0]
-            frame['word_to_find'] = self.word_buffer
+            print(self.word_buffer)
+            # frame['word_to_find'] = self.word_buffer
         
         # when new objects are observed (i.e., not SpeechRecognitionIUs)
         if isinstance(input_iu, ObjectFeaturesIU):
@@ -62,13 +64,26 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
             features = [np.array(objects[obj_id]) for obj_id in objects]
             
             # word = self.wac.best_word((intents, features))
-            # print("best word", word)
-
+            # frame['best_word'] = self.word_buffer
+            
             if self.word_buffer is not None:
-                target = self.wac.best_object(self.word_buffer, (intents, features))
-                if target is None: return None
-                frame['best_object'] = target[0] 
-                frame['obj_confidence'] = target[1] 
+                # word = self.wac.best_word((intents, features))
+                # print("best word", word)
+                self.wac.add_observation(self.word_buffer, features[0], 1)
+                self.itts += 1
+                if self.itts % 10 == 0:
+                    print('updating negatives')
+                    self.wac.create_negatives()
+                    print('training')
+                    self.wac.train()
+                    print('persisting')
+                    self.wac.persist_model()
+            
+            # if self.word_buffer is not None:
+            #     target = self.wac.best_object(self.word_buffer, (intents, features))
+            #     if target is None: return None
+            #     frame['best_object'] = target[0] 
+            #     frame['obj_confidence'] = target[1] 
 
         if len(frame) == 0: return None
         output_iu = self.create_iu(input_iu)
@@ -78,4 +93,5 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
 
 
     def setup(self):
-        self.wac.load_model()
+        # self.wac.load_model()
+        pass

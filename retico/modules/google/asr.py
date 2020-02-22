@@ -3,6 +3,7 @@ A Module that offers different types of real time speech recognition.
 """
 
 import queue
+import time
 import threading
 from retico.core import abstract
 from retico.core.text.common import SpeechRecognitionIU
@@ -107,17 +108,6 @@ class GoogleASRModule(abstract.AbstractModule):
 
             yield b"".join(data)
 
-    def _produce_predictions_loop(self):
-        for response in self.responses:
-            p, t, s, c, f = self._extract_results(response)
-            if p:
-                output_iu = self.create_iu(self.latest_input_iu)
-                self.latest_input_iu = None
-                output_iu.set_asr_results(p, t, s, c, f)
-                if f:
-                    output_iu.committed = True
-                self.append(output_iu)
-
     def setup(self):
         self.client = gspeech.SpeechClient()
         config = types.RecognitionConfig(
@@ -129,15 +119,47 @@ class GoogleASRModule(abstract.AbstractModule):
             config=config, interim_results=True
         )
 
+    def request_thread(self):
+        requests = None
+        while True:
+            try:
+
+                if requests is not None:
+                    time.sleep(1.0)
+                    continue
+
+
+                def _produce_predictions_loop():
+                    for response in self.responses:
+                        try:
+                            p, t, s, c, f = self._extract_results(response)
+                            if p:
+                                output_iu = self.create_iu(self.latest_input_iu)
+                                self.latest_input_iu = None
+                                output_iu.set_asr_results(p, t, s, c, f)
+                                if f:
+                                    output_iu.committed = True
+                                self.append(output_iu)
+                        except:
+                            requests = None
+
+                requests = (
+                    types.StreamingRecognizeRequest(audio_content=content)
+                    for content in self._generator()
+                )
+                self.responses = self.client.streaming_recognize(
+                    self.streaming_config, requests
+                )
+                
+                _produce_predictions_loop()
+                
+            except:
+                requests = None
+                print('Google Thread Died. Attempting to Restart.')
+        
+
     def prepare_run(self):
-        requests = (
-            types.StreamingRecognizeRequest(audio_content=content)
-            for content in self._generator()
-        )
-        self.responses = self.client.streaming_recognize(
-            self.streaming_config, requests
-        )
-        t = threading.Thread(target=self._produce_predictions_loop)
+        t = threading.Thread(target=self.request_thread)
         t.start()
 
     def shutdown(self):

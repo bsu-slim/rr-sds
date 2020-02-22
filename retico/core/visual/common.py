@@ -46,13 +46,13 @@ class ImageIU(abstract.IncrementalUnit):
 
     def get_json(self):
         payload = {}
-        payload['payload'] = np.array(self.payload).tolist()
+        payload['image'] = np.array(self.payload).tolist()
         payload['nframes'] = self.nframes
         payload['rate'] = self.rate
         return payload
 
     def create_from_json(self, json_dict):
-        self.image =  Image.fromarray(np.array(json_dict['payload'], dtype='uint8'))
+        self.image =  Image.fromarray(np.array(json_dict['image'], dtype='uint8'))
         self.payload = self.image
         self.nframes = json_dict['nframes']
         self.rate = json_dict['rate']
@@ -89,6 +89,19 @@ class DetectedObjectsIU(abstract.IncrementalUnit):
         self.detected_objects = detected_objects
         self.num_objects = detected_objects['num_objs']
 
+    def get_json(self):
+        payload = {}
+        payload['image'] = np.array(self.payload).tolist()
+        payload['detected_objects'] = self.detected_objects
+        payload['num_objects'] = self.num_objects
+        return payload
+
+    def create_from_json(self, json_dict):
+        self.image =  Image.fromarray(np.array(json_dict['image'], dtype='uint8'))
+        self.detected_objects = json_dict['detected_objects']
+        self.payload = self.detected_objects
+        self.num_objects = json_dict['num_objects']
+
 class ObjectFeaturesIU(abstract.IncrementalUnit):
     """An image incremental unit that maintains a list of feature vectors for detected objects in a scene.
 
@@ -119,6 +132,19 @@ class ObjectFeaturesIU(abstract.IncrementalUnit):
         self.payload = object_features
         self.object_features = object_features
         self.num_objects = len(object_features)
+
+    def get_json(self):
+        payload = {}
+        payload['image'] = np.array(self.payload).tolist()
+        payload['object_features'] = self.object_features
+        payload['num_objects'] = self.num_objects
+        return payload
+
+    def create_from_json(self, json_dict):
+        self.image =  Image.fromarray(np.array(json_dict['image'], dtype='uint8'))
+        self.object_features = json_dict['object_features']
+        self.payload = self.detected_objects
+        self.num_objects = json_dict['num_objects']
 
 class ImageCropperModule(abstract.AbstractModule):
     """A module that crops images"""

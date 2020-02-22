@@ -68,7 +68,7 @@ class SpeechRecognitionIU(TextIU):
             final (boolean): Whether the prediction is final
         """
         self.predictions = predictions
-        self.payload = predictions
+        self.payload = {'text': text}
         self.text = text
         self.stability = stability
         self.confidence = confidence

@@ -91,12 +91,12 @@ class MaskrRCNNObjectDetection(abstract.AbstractModule):
                 if conf < self.conf_threshold:
                     continue
                 label = output_dict['detection_classes'][ind]
-                inner_dict['ymin'] = obj[0]
-                inner_dict['xmin'] = obj[1]
-                inner_dict['ymax'] = obj[2]
-                inner_dict['xmax'] = obj[3]
-                inner_dict['label'] = label
-                inner_dict['confidence'] = conf
+                inner_dict['ymin'] = float(obj[0])
+                inner_dict['xmin'] = float(obj[1])
+                inner_dict['ymax'] = float(obj[2])
+                inner_dict['xmax'] = float(obj[3])
+                inner_dict['label'] = int(label)
+                inner_dict['confidence'] = float(conf)
                 returning_dictionary["object"+str(ind)] = inner_dict
             if len(returning_dictionary) == 0: return
             returning_dictionary['num_objs'] = len(returning_dictionary)
