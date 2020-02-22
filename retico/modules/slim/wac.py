@@ -114,9 +114,11 @@ class WAC:
         return self.compose(predictions)
 
     def best_word(self, context):
-        probs = [(word, self.proba(word, context)) for word in self.trained_wac]
-        res = max(probs, key = itemgetter(1))
-        return res
+        if len(self.trained_wac) > 0:
+            probs = [(word, self.proba(word, context)) for word in self.trained_wac]
+            res = max(probs, key = itemgetter(1))
+            return res
+        return None
 
     def best_object(self, word, context):
         preds =  self.proba(word, context)

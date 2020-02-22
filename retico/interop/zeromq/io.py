@@ -162,7 +162,7 @@ class ZeroMQWriter(abstract.AbstractModule):
         payload = {}
         payload['originatingTime'] = datetime.datetime.now().isoformat()
         
-        print(input_iu.payload)
+        # print(input_iu.payload)
         if isinstance(input_iu, ImageIU) or isinstance(input_iu, DetectedObjectsIU)  or isinstance(input_iu, ObjectFeaturesIU):
             payload['message'] = json.dumps(input_iu.get_json())
         else:

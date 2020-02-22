@@ -47,6 +47,7 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
         self.wac = WAC(wac_dir)
         self.word_buffer = None
         self.itts = 0
+        self.train_mode = True
 
     def process_iu(self, input_iu):
 
@@ -63,35 +64,39 @@ class WordsAsClassifiersModule(abstract.AbstractModule):
             intents = objects.keys()
             features = [np.array(objects[obj_id]) for obj_id in objects]
             
-            # word = self.wac.best_word((intents, features))
+            word = self.wac.best_word((intents, features))
+            print('best word', word)
             # frame['best_word'] = self.word_buffer
             
-            if self.word_buffer is not None:
-                # word = self.wac.best_word((intents, features))
-                # print("best word", word)
-                self.wac.add_observation(self.word_buffer, features[0], 1)
-                self.itts += 1
-                if self.itts % 10 == 0:
-                    print('updating negatives')
-                    self.wac.create_negatives()
-                    print('training')
-                    self.wac.train()
-                    print('persisting')
-                    self.wac.persist_model()
+
+            # uncomment below for training
+            if self.train_mode:
+                if self.word_buffer is not None:
+                    word = self.wac.best_word((intents, features))
+                    print("best word", word)
+
+                    self.wac.add_observation(self.word_buffer, features[0], 1)
+                    self.itts += 1
+                    if self.itts % 25 == 0:
+                        print('updating negatives')
+                        self.wac.create_negatives()
+                        print('training')
+                        self.wac.train()
+                        print('persisting')
+                        self.wac.persist_model()
             
-            # if self.word_buffer is not None:
-            #     target = self.wac.best_object(self.word_buffer, (intents, features))
-            #     if target is None: return None
-            #     frame['best_object'] = target[0] 
-            #     frame['obj_confidence'] = target[1] 
+            
+            if self.word_buffer is not None:
+                target = self.wac.best_object(self.word_buffer, (intents, features))
+                if target is None: return None
+                frame['best_object'] = target[0] 
+                frame['obj_confidence'] = target[1] 
 
         if len(frame) == 0: return None
         output_iu = self.create_iu(input_iu)
         output_iu.set_frame(frame)
         return output_iu
 
-
-
     def setup(self):
-        # self.wac.load_model()
-        pass
+        if not self.train_mode:
+            self.wac.load_model()

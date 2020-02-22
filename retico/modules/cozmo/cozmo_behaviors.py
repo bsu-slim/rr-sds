@@ -16,7 +16,7 @@ class CozmoBehaviors():
     def __init__(self, robot):
         self.robot = robot
         self.objects = None
-        self.robot.set_robot_volume(0.25)
+        # self.robot.set_robot_volume(0.25)
         self.pivot_wheel = [25,-25, 40,-40]
         self.turn_wheel = [30, 40, 50, -30, -40, -15]
         self.durations = [1,2,3,4,5]
@@ -25,7 +25,7 @@ class CozmoBehaviors():
 
     def start_position(self):
         self.robot.set_lift_height(1.0, in_parallel=True)
-        self.robot.set_head_angle(degrees(-25), in_parallel=True) # don't look too far down or up
+        self.robot.set_head_angle(degrees(-20), in_parallel=True) # don't look too far down or up
 
     def set_current_objects(self, objects):
         self.objects = objects
