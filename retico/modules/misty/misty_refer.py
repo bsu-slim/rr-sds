@@ -72,8 +72,8 @@ class MistyReferModule(abstract.AbstractModule):
         if command is None: return
 
         if '(' in command and ')' in command:
-            word = command[command.find('(')+1:command.find(')')]
-            self._current_word = word
+            # word = command[command.find('(')+1:command.find(')')]
+            # self._current_word = word
             # say word
             command = command[:command.find('(')]
 
@@ -153,6 +153,8 @@ class MistyReferModule(abstract.AbstractModule):
         if isinstance(input_iu, GroundedFrameIU):
             if 'best_known_word' in input_iu.payload:
                 self.best_known_word = input_iu.payload['best_known_word']
+            if 'word_to_find' in input_iu.payload:
+                self._current_word = input_iu.payload['word_to_find']
             return None
         
         if isinstance(input_iu, DetectedObjectsIU):

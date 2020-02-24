@@ -67,9 +67,9 @@ class CozmoReferModule(abstract.AbstractModule):
         confidence = 0.0
 
         if '(' in command and ')' in command:
-            word = command[command.find('(')+1:command.find(')')]
-            self._current_word = word
-            self.cb.say(word)
+            # word = command[command.find('(')+1:command.find(')')]
+            # self._current_word = word
+            # self.cb.say(word)
             command = command[:command.find('(')]
 
         if ':' in command:
@@ -158,6 +158,8 @@ class CozmoReferModule(abstract.AbstractModule):
         if isinstance(input_iu, GroundedFrameIU):
             if 'best_known_word' in input_iu.payload:
                 self.best_known_word = input_iu.payload['best_known_word']
+            if 'word_to_find' in input_iu.payload:
+                self._current_word = input_iu.payload['word_to_find']
             return None
             
         if isinstance(input_iu, DetectedObjectsIU):
