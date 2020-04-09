@@ -13,10 +13,10 @@ import datetime
 class ReaderSingleton:
     __instance = None
     @staticmethod 
-    def getInstance():
+    def getInstance(ip, port):
         """ Static access method. """
         if ReaderSingleton.__instance == None:
-            ReaderSingleton()
+            ReaderSingleton(ip, port)
         return ReaderSingleton.__instance
     def __init__(self, ip, port):
         """ Virtually private constructor. """
@@ -83,7 +83,7 @@ class ZeroMQReader(abstract.AbstractProducingModule):
     def output_iu():
         return ZeroMQIU 
 
-    def __init__(self, topic,  **kwargs):
+    def __init__(self, topic, ip, port,  **kwargs):
         """Initializes the ZeroMQReader.
 
         Args: topic(str): the topic/scope where the information will be read.
@@ -92,6 +92,8 @@ class ZeroMQReader(abstract.AbstractProducingModule):
         super().__init__(**kwargs)
         self.topic = topic
         self.reader = None
+        self.ip = ip
+        self.port = port
 
     def process_iu(self, input_iu):
         '''
@@ -110,7 +112,7 @@ class ZeroMQReader(abstract.AbstractProducingModule):
 
 
     def prepare_run(self):
-        self.reader = ReaderSingleton.getInstance().socket
+        self.reader = ReaderSingleton.getInstance(self.ip, self.port).socket
         self.reader.setsockopt(zmq.SUBSCRIBE, self.topic.encode())
 
     def setup(self):
