@@ -148,7 +148,7 @@ $ pip install py-espeak-ng
 Then on **Linux** run the following command
 
 ```
-sudo apt install espeak-ng
+$ sudo apt install espeak-ng
 ```
 
 ### Cozmo Robot
