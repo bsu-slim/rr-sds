@@ -137,6 +137,20 @@ https://github.com/tensorflow/models/tree/master/research/object_detection
 You will then need to set the TF_RESEARCH environment variable to the models/research folder, 
 and the TF_SLIM environment variable to the models/research/slim folder. 
 
+### eSpeak
+
+For using eSpeak module, you will need to install on your system
+
+```
+$ pip install py-espeak-ng
+```
+
+Then on **Linux** run the following command
+
+```
+sudo apt install espeak-ng
+```
+
 ### Cozmo Robot
 
 If you want to use Cozmo, follow the installation instructions found on the [Anki Cozmo Website](https://developer.anki.com/blog/learn/tutorial/getting-started-with-the-cozmo-sdk/index.html).
