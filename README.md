@@ -160,7 +160,7 @@ For an exemple about ROS, click on [this link](https://github.com/Microsoft/psi/
 
 There are two ways to use Misty camera:
 
-1. Using Retico module, make sure Retico is installed and make sure you are connected to the same network that misty is connected to, It can be subscribed to like any other Retico module, you will need to pass in misty’s IP, and optionally width and height values for the picture size if they are needed to be different from the default.
+* Using Retico module, make sure Retico is installed and make sure you are connected to the same network that misty is connected to, It can be subscribed to like any other Retico module, you will need to pass in misty’s IP, and optionally width and height values for the picture size if they are needed to be different from the default.
 
 To run the test:
 
@@ -168,7 +168,7 @@ To run the test:
 $ python test_misty_camera.py
 ```
 
-2. Without using Retico and that can be achieved by changing the IP to misty’s correct IP, Misty will take a picture and translate it to base64, as well as save the image to a file. 
+* Without using Retico and that can be achieved by changing the IP to misty’s correct IP, Misty will take a picture and translate it to base64, as well as save the image to a file. 
 
 ```
 $ python mistypicture.py
