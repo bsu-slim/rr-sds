@@ -156,6 +156,30 @@ To use ROS, you need to follow installation steps of [this installation](http://
 
 For an exemple about ROS, click on [this link](https://github.com/Microsoft/psi/tree/master/Samples/RosTurtleSample).
 
+### Misty robot
+
+There are two ways to use Misty camera:
+
+1. Using Retico module, make sure Retico is installed and make sure you are connected to the same network that misty is connected to, It can be subscribed to like any other Retico module, you will need to pass in misty’s IP, and optionally width and height values for the picture size if they are needed to be different from the default.
+
+To run the test:
+
+```
+$ python test_misty_camera.py
+```
+
+2. Without using Retico and that can be achieved by changing the IP to misty’s correct IP, Misty will take a picture and translate it to base64, as well as save the image to a file. 
+
+```
+$ python mistypicture.py
+```
+
+To run with basic random movements 
+
+```
+$ python mistyidle.py
+```
+
 ### Cozmo Robot
 
 If you want to use Cozmo, follow the installation instructions found on the [Anki Cozmo Website](https://developer.anki.com/blog/learn/tutorial/getting-started-with-the-cozmo-sdk/index.html).
