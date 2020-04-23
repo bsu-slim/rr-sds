@@ -63,11 +63,9 @@ class eSpeakModule(abstract.AbstractModule):
             text = self.iasr.get_increment(input_iu)
             
             self.esp.say(text.get_text(),sync=True)
-            
-            time.sleep(3)
+            print(text.get_text())
+            time.sleep(0.5)
 
-            print(text.get_text())          
- 
     def setup(self):
        
         t = threading.Thread(target=self.run_detector)

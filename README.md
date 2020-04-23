@@ -150,6 +150,11 @@ Then on **Linux** run the following command
 ```
 $ sudo apt install espeak-ng
 ```
+### Robotics operating system (ROS)
+
+To use ROS, you need to follow installation steps of [this installation](http://wiki.ros.org/lunar/Installation/Ubuntu).
+
+For an exemple about ROS, click on [this link](https://github.com/Microsoft/psi/tree/master/Samples/RosTurtleSample).
 
 ### Cozmo Robot
 
