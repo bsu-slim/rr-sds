@@ -58,13 +58,15 @@ class eSpeakModule(abstract.AbstractModule):
             if len(self.queue) == 0:
                 time.sleep(0.5)
                 continue
-            
+
             input_iu = self.queue.popleft()
-            text = self.iasr.get_increment(input_iu)
-            
-            self.esp.say(text.get_text(),sync=True)
-            print(text.get_text())
-            time.sleep(0.5)
+            text = self.iasr.process_iu(input_iu)
+            if text.get_text()[0].isupper():
+                self.esp.say(text.get_text(),sync=True)
+                print(text.get_text())
+            else:
+                continue    
+                
 
     def setup(self):
        

@@ -76,3 +76,4 @@ class SpeechRecognitionIU(TextIU):
 
     def get_text(self):
         return self.text
+    
