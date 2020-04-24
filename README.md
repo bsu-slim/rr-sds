@@ -180,6 +180,23 @@ To run with basic random movements
 $ python mistyidle.py
 ```
 
+### opencv face detection
+
+
+The module will run OpenCV's face detection algorithm and will return (x,y) coordinates for the bounding boxes of each face as well as the end coordinates, before running it make sure you install Retico, and your computer has a camera, finally install NumPy using the command bollow:
+
+```
+$ pip install numpy
+```
+
+In order to test the module, in the root retico folder there is a test_face_detection.py script that will run the module on your computer using your camera and you will be able to see the output printed on the screen.
+
+To run the test:
+
+```
+$ python test_face_detection.py 
+```
+
 ### Cozmo Robot
 
 If you want to use Cozmo, follow the installation instructions found on the [Anki Cozmo Website](https://developer.anki.com/blog/learn/tutorial/getting-started-with-the-cozmo-sdk/index.html).

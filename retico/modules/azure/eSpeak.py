@@ -65,7 +65,7 @@ class eSpeakModule(abstract.AbstractModule):
                 self.esp.say(text.get_text(),sync=True)
                 print(text.get_text())
             else:
-                continue    
+                continue
                 
 
     def setup(self):
