@@ -63,9 +63,6 @@ class ZeroMQIU(abstract.IncrementalUnit):
     def set_payload(self, payload):
         self.payload = payload
         
-
-
-
 class ZeroMQReader(abstract.AbstractProducingModule):
 
     """A ZeroMQ Reader Module
@@ -120,7 +117,6 @@ class ZeroMQReader(abstract.AbstractProducingModule):
     def setup(self):
         pass
         
-
 class ZeroMQWriter(abstract.AbstractModule):
 
     """A ZeroMQ Writer Module

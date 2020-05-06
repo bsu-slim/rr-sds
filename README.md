@@ -150,11 +150,7 @@ Then on **Linux** run the following command
 ```
 $ sudo apt install espeak-ng
 ```
-### Robotics operating system (ROS)
 
-To use ROS, you need to follow installation steps of [this installation](http://wiki.ros.org/lunar/Installation/Ubuntu).
-
-For an exemple about ROS, click on [this link](https://github.com/Microsoft/psi/tree/master/Samples/RosTurtleSample).
 
 ### Misty robot
 
@@ -208,6 +204,24 @@ https://bitbucket.org/bsu-slim/cozmo-python-sdk
 ```
 
 Then you'll need to set the COZMO environment variable to your cozmo-python-sdk/src folder.
+
+
+### ROS
+Retico modules can make use of interop communications using ROS
+
+To use ROS, you need to follow installation steps of [this installation](http://wiki.ros.org/lunar/Installation/Ubuntu).
+
+For an exemple about ROS, click on [this link](https://github.com/Microsoft/psi/tree/master/Samples/RosTurtleSample).
+
+ros can be used in conjunction with retico utilizing the ros python client library
+
+```bash
+$ pip install rospy
+```
+
+You will have to be able to use ros tools in order to run the examples which can be found
+in ./examples/test_audio_ros.py as well as ./examples/Turtlesim_Teleop.py
+
 
 ## Installing Retico
 
