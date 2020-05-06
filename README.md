@@ -137,6 +137,66 @@ https://github.com/tensorflow/models/tree/master/research/object_detection
 You will then need to set the TF_RESEARCH environment variable to the models/research folder, 
 and the TF_SLIM environment variable to the models/research/slim folder. 
 
+### eSpeak
+
+For using eSpeak module, you will need to install on your system
+
+```
+$ pip install py-espeak-ng
+```
+
+Then on **Linux** run the following command
+
+```
+$ sudo apt install espeak-ng
+```
+### Robotics operating system (ROS)
+
+To use ROS, you need to follow installation steps of [this installation](http://wiki.ros.org/lunar/Installation/Ubuntu).
+
+For an exemple about ROS, click on [this link](https://github.com/Microsoft/psi/tree/master/Samples/RosTurtleSample).
+
+### Misty robot
+
+There are two ways to use Misty camera:
+
+* Using Retico module, make sure Retico is installed and make sure you are connected to the same network that misty is connected to, It can be subscribed to like any other Retico module, you will need to pass in misty’s IP, and optionally width and height values for the picture size if they are needed to be different from the default.
+
+To run the test:
+
+```
+$ python test_misty_camera.py
+```
+
+* Without using Retico and that can be achieved by changing the IP to misty’s correct IP, Misty will take a picture and translate it to base64, as well as save the image to a file. 
+
+```
+$ python mistypicture.py
+```
+
+To run with basic random movements 
+
+```
+$ python mistyidle.py
+```
+
+### opencv face detection
+
+
+The module will run OpenCV's face detection algorithm and will return (x,y) coordinates for the bounding boxes of each face as well as the end coordinates, before running it make sure you install Retico, and your computer has a camera, finally install NumPy using the command bollow:
+
+```
+$ pip install numpy
+```
+
+In order to test the module, in the root retico folder there is a test_face_detection.py script that will run the module on your computer using your camera and you will be able to see the output printed on the screen.
+
+To run the test:
+
+```
+$ python test_face_detection.py 
+```
+
 ### Cozmo Robot
 
 If you want to use Cozmo, follow the installation instructions found on the [Anki Cozmo Website](https://developer.anki.com/blog/learn/tutorial/getting-started-with-the-cozmo-sdk/index.html).
