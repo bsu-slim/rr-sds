@@ -7,8 +7,10 @@ from retico.core.visual.common import ImageIU
 
 # zeromq & supporting libraries
 import zmq, json
+import threading
 import datetime
-
+import time
+from collections import deque
 
 class ReaderSingleton:
     __instance = None
@@ -153,22 +155,37 @@ class ZeroMQWriter(abstract.AbstractModule):
         """
         super().__init__(**kwargs)
         self.topic = topic.encode()
+        self.queue = deque() # no maxlen
         self.writer = None
 
     def process_iu(self, input_iu):
         '''
         This assumes that the message is json formatted, then packages it as payload into an IU
         '''
-        payload = {}
-        payload['originatingTime'] = datetime.datetime.now().isoformat()
-        
-        # print(input_iu.payload)
-        if isinstance(input_iu, ImageIU) or isinstance(input_iu, DetectedObjectsIU)  or isinstance(input_iu, ObjectFeaturesIU):
-            payload['message'] = json.dumps(input_iu.get_json())
-        else:
-            payload['message'] = json.dumps(input_iu.payload)
+        self.queue.append(input_iu)
 
-        self.writer.send_multipart([self.topic, json.dumps(payload).encode('utf-8')])
+        return None
+
+    def run_writer(self):
+
+        while True:
+            if len(self.queue) == 0:
+                time.sleep(0.1)
+                continue
+            
+            input_iu = self.queue.popleft()
+            payload = {}
+            payload['originatingTime'] = datetime.datetime.now().isoformat()
+            
+            # print(input_iu.payload)
+            if isinstance(input_iu, ImageIU) or isinstance(input_iu, DetectedObjectsIU)  or isinstance(input_iu, ObjectFeaturesIU):
+                payload['message'] = json.dumps(input_iu.get_json())
+            else:
+                payload['message'] = json.dumps(input_iu.payload)
+
+            self.writer.send_multipart([self.topic, json.dumps(payload).encode('utf-8')])
 
     def setup(self):
         self.writer = WriterSingleton.getInstance().socket
+        t = threading.Thread(target=self.run_writer)
+        t.start()
