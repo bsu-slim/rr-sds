@@ -19,10 +19,10 @@ from retico.core.text.asr import IncrementalizeASRModule
 
 # run: export GOOGLE_APPLICATION_CREDENTIALS=/home/casey/substutute-ca5bdacf1d9a.json
 
-aod_endpoint = "https://slimcomputervision.cognitiveservices.azure.com/"
-aod_key = "59bfd2dc248a4d08957edf7a6eb6331f"
+aod_endpoint = ""
+aod_key = ""
 aed_endpoint = "https://westus2.api.cognitive.microsoft.com/"
-aed_key = "1837b9d29e0b4a22843d103a7ca8b3c9"
+aed_key = ""
 
 # instantiate modules
 mic = MicrophoneModule(1000, rate=16000)
