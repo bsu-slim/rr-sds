@@ -38,8 +38,8 @@ from retico.modules.misty.misty_state import MistyStateModule
 
 
 domain_dir = '/home/casey/git/retico/data/misty/dm/dialogue.xml'
-aod_endpoint = "https://slimcomputervision.cognitiveservices.azure.com/"
-aod_key = "59bfd2dc248a4d08957edf7a6eb6331f"
+aod_endpoint = ""
+aod_key = ""
 wac_dir = '/home/casey/git/retico/data/wac/subset'
 mask_rcnn_labels = '/home/casey/git/retico/data/maskrcnn/label_map.pbtxt'
 mask_rcnn_model = '/home/casey/git/retico/data/maskrcnn/frozen_inference_graph.pb'
