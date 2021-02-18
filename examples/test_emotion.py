@@ -10,7 +10,7 @@ from retico.core.visual.io import WebcamModule
 
 
 aed_endpoint = "https://westus2.api.cognitive.microsoft.com/"
-aed_key = "1837b9d29e0b4a22843d103a7ca8b3c9"
+aed_key = ""
 
 # instantiate modules
 emotion = AzureEmotionDetectionModule(aed_key, aed_endpoint)
