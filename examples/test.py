@@ -43,7 +43,7 @@ mask_rcnn_model = ''
 # instantiate modules
 mic = MicrophoneModule(1000)
 # mic = RespeakerMicrophoneModule('192.168.20.49:8000')
-#asr = AzureASRModule("179eaa4b8fc54e0fa5115ba5d14883f2")
+#asr = AzureASRModule("")
 # asr = GoogleASRModule(rate=16000)
 asr = GoogleASRModule()
 iasr = IncrementalizeASRModule()
