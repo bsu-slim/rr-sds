@@ -32,13 +32,13 @@ from retico.core.visual.common import ImageIU
 
 # run: export GOOGLE_APPLICATION_CREDENTIALS=/home/casey/substutute-ca5bdacf1d9a.json
 
-model_dir = '/home/casey/git/defclar/models/nlu_20191025-102321' # incr pipeline
-domain_dir = '/home/casey/git/PyOpenDial/domains/augi/augi.xml'
-aod_endpoint = "https://slimcomputervision.cognitiveservices.azure.com/"
-aod_key = "59bfd2dc248a4d08957edf7a6eb6331f"
-wac_dir = '/home/casey/git/retico/data/wac/subset'
-mask_rcnn_labels = '/home/casey/git/retico/data/maskrcnn/label_map.pbtxt'
-mask_rcnn_model = '/home/casey/git/retico/data/maskrcnn/frozen_inference_graph.pb'
+model_dir = '' # incr pipeline
+domain_dir = ''
+aod_endpoint = ""
+aod_key = ""
+wac_dir = ''
+mask_rcnn_labels = ''
+mask_rcnn_model = ''
 
 # instantiate modules
 mic = MicrophoneModule(1000)
