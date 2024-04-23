@@ -11,4 +11,4 @@ pillow
 efficientnet
 google-cloud-speech
 cssutils
-scikit-learn==0.22.1
+scikit-learn>=0.24.1
